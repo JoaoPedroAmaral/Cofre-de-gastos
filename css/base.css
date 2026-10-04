@@ -1,0 +1,174 @@
+@import url('../vendor/fontes.css');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--fonte-base);
+  font-size: var(--texto-md);
+  line-height: 1.5;
+  color: var(--cor-texto);
+  background: var(--cor-fundo);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--texto-xxl);
+}
+
+h2 {
+  font-size: var(--texto-lg);
+}
+
+h3 {
+  font-size: var(--texto-ml);
+}
+
+p {
+  text-wrap: pretty;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--cor-marca);
+  text-decoration: none;
+  transition: color var(--duracao-rapida) var(--curva);
+}
+
+a:hover {
+  color: var(--cor-marca-clara);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+:focus-visible {
+  outline: var(--borda-foco) solid var(--cor-foco);
+  outline-offset: 2px;
+  border-radius: var(--raio-sm);
+}
+
+::selection {
+  background: var(--cor-marca);
+  color: var(--cor-marca-texto);
+}
+
+:root {
+  --fonte-base: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fonte-display: 'Syne', 'Geist', system-ui, sans-serif;
+  --fonte-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --texto-xs: 0.75rem;
+  --altura-rail-celular: 92px;
+  --texto-sm: 0.8125rem;
+  --texto-md: 0.9375rem;
+  --texto-ml: 1.125rem;
+  --texto-lg: 1.375rem;
+  --texto-xl: 1.75rem;
+  --texto-xxl: 2.75rem;
+  --texto-gigante: 5.25rem;
+
+  --espaco-1: 0.25rem;
+  --espaco-2: 0.5rem;
+  --espaco-3: 0.75rem;
+  --espaco-4: 1rem;
+  --espaco-5: 1.5rem;
+  --espaco-6: 2rem;
+  --espaco-7: 2.75rem;
+  --espaco-8: 3.5rem;
+
+  --raio-sm: 8px;
+  --raio-md: 12px;
+  --raio-lg: 18px;
+  --raio-xl: 24px;
+
+  --borda-foco: 2px;
+  --largura-rail: 96px;
+  --largura-maxima: 1300px;
+
+  --duracao-rapida: 120ms;
+  --duracao-media: 220ms;
+  --duracao-lenta: 420ms;
+  --curva: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --curva-saida: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mono {
+  font-family: var(--fonte-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.display {
+  font-family: var(--fonte-display);
+}
+
+.fraco {
+  color: var(--cor-texto-fraco);
+}
+
+.aviso-sem-script {
+  padding: var(--espaco-5);
+  text-align: center;
+}
+
+.pular-para-conteudo {
+  position: absolute;
+  left: var(--espaco-4);
+  top: var(--espaco-4);
+  z-index: 100;
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio-md);
+  background: var(--cor-marca);
+  color: var(--cor-fundo);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.pular-para-conteudo:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
