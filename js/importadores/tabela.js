@@ -4,6 +4,7 @@ const SEPARADOR_ASSINATURA = '|';
 const ACENTOS = /[\u0300-\u036f]/g;
 const NAO_ALFANUMERICO = /[^a-z0-9]/g;
 const TEXTO_VAZIO = '';
+const ESPACO = ' ';
 const PRIMEIRA_LINHA_PLANILHA = 2;
 const COLUNA_AUSENTE = -1;
 
@@ -70,6 +71,13 @@ function celula(linha, indice) {
   if (indice === undefined || indice === null) {
     return TEXTO_VAZIO;
   }
+  if (Array.isArray(indice)) {
+    return indice
+      .map((posicao) => celula(linha, posicao))
+      .filter(Boolean)
+      .join(ESPACO);
+  }
+
   const conteudo = linha[indice];
   return conteudo === undefined || conteudo === null ? TEXTO_VAZIO : String(conteudo).trim();
 }

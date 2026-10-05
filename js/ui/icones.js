@@ -6,6 +6,7 @@ const TRACOS = Object.freeze({
   importar: ['M12 4v11M7 10l5 5 5-5M5 20h14'],
   regras: ['M5 7h7M16 7h3M5 17h3M12 17h7'],
   exportar: ['M12 15V4M7 9l5-5 5 5M5 20h14'],
+  ajustes: ['M5 8h8M17 8h2M5 16h2M11 16h8'],
   travar: ['M8 11V7a4 4 0 0 1 8 0v4'],
   privacidade: ['M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6z'],
   tema: ['M12 4a8 8 0 0 0 0 16z'],
@@ -24,7 +25,11 @@ const CIRCULOS = Object.freeze({
     { cx: 10, cy: 17, r: 2 }
   ],
   tema: [{ cx: 12, cy: 12, r: 8 }],
-  busca: [{ cx: 11, cy: 11, r: 7 }]
+  busca: [{ cx: 11, cy: 11, r: 7 }],
+  ajustes: [
+    { cx: 15, cy: 8, r: 2 },
+    { cx: 9, cy: 16, r: 2 }
+  ]
 });
 
 const RETANGULOS = Object.freeze({

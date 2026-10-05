@@ -4,8 +4,11 @@ const CARACTERES_IGNORADOS = /[\s R$]/gi;
 const APENAS_NUMERO = /^-?\d+$/;
 const SEPARADORES = /[.,]/g;
 const CASAS_DECIMAIS = 2;
-const SINAIS_NEGATIVOS = ['-', '(', ')'];
-const SINAIS_REMOVIVEIS = /[-()]/g;
+const MENOS_UNICODE = '−';
+const TRACO_CURTO = '–';
+const TRACO_LONGO = '—';
+const SINAIS_NEGATIVOS = ['-', MENOS_UNICODE, TRACO_CURTO, TRACO_LONGO, '(', ')'];
+const SINAIS_REMOVIVEIS = /[-−–—()+]/g;
 const TEXTO_VAZIO = '';
 
 export function paraCentavos(valor) {

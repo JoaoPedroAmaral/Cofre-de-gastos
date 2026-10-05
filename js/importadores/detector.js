@@ -1,3 +1,5 @@
+import { dividirLinha } from './linhaCsv.js';
+
 export const FORMATOS = Object.freeze({
   OFX: 'ofx',
   CSV: 'csv',
@@ -12,6 +14,8 @@ const MARCAS_OFX = ['OFXHEADER', '<OFX>', '<STMTTRN>', '<OFX '];
 const LINHAS_INSPECIONADAS = 10;
 const DELIMITADORES = [';', ',', '\t', '|'];
 const QUEBRA_LINHA = /\r?\n/;
+const MINIMO_DE_COLUNAS = 2;
+const PROPORCAO_MINIMA_DE_LINHAS = 0.6;
 
 export function detectar(bytes, texto) {
   if (combina(bytes, ASSINATURA_ZIP)) {
@@ -37,7 +41,7 @@ export function detectarDelimitador(texto) {
 
   const pontuacoes = DELIMITADORES.map((delimitador) => ({
     delimitador,
-    ocorrencias: contarConsistentes(linhas, delimitador)
+    ocorrencias: colunasDeCabecalho(linhas, delimitador)
   }));
 
   const melhor = pontuacoes.reduce((maior, atual) =>
@@ -60,14 +64,20 @@ function linhasUteis(texto) {
     .slice(0, LINHAS_INSPECIONADAS);
 }
 
-function contarConsistentes(linhas, delimitador) {
-  const contagens = linhas.map((linha) => linha.split(delimitador).length - 1);
-  const primeira = contagens[0];
-  if (primeira === 0) {
+function colunasDeCabecalho(linhas, delimitador) {
+  const contagens = linhas.map((linha) => dividirLinha(linha, delimitador).length);
+  const doCabecalho = contagens[0];
+
+  if (doCabecalho < MINIMO_DE_COLUNAS) {
     return 0;
   }
-  const consistente = contagens.every((contagem) => contagem === primeira);
-  return consistente ? primeira : 0;
+
+  const acompanham = contagens.filter((contagem) => contagem === doCabecalho).length;
+  if (acompanham / contagens.length < PROPORCAO_MINIMA_DE_LINHAS) {
+    return 0;
+  }
+
+  return doCabecalho - 1;
 }
 
 function combina(bytes, assinatura) {

@@ -13,6 +13,7 @@ import {
   TEMAS
 } from '../../js/nucleo/constantes.js';
 import { preparar } from '../../js/nucleo/preparar.js';
+import { estaForaDoTotal, motivoForaDoTotal } from '../../js/nucleo/naoGasto.js';
 
 function lancamentoDe(descricao, id) {
   return {
@@ -157,15 +158,15 @@ descrever('Estado da aplicação', () => {
     esperar(obter().aba).igual(ABAS_PLANILHA.TODOS);
   });
 
-  isso('inclui no total um lancamento marcado como fora', () => {
+  isso('inclui no total um lancamento que o sistema tirou', () => {
     reiniciar();
     despachar(ACOES.REGISTRAR_IMPORTACAO, {
       lancamentos: [{ id: 'a1', valor: -100, naoGasto: MOTIVOS_NAO_GASTO.PAGAMENTO_FATURA }],
       arquivos: []
     });
-    despachar(ACOES.ALTERNAR_NAO_GASTO, 'a1');
-    esperar(obter().lancamentos[0].naoGasto).falso();
-    esperar(obter().lancamentos[0].revisadoManual).verdadeiro();
+    despachar(ACOES.DEFINIR_FORA_DO_TOTAL, { ids: ['a1'], fora: false });
+    esperar(estaForaDoTotal(obter().lancamentos[0])).falso();
+    esperar(obter().lancamentos[0].naoGasto).igual(MOTIVOS_NAO_GASTO.PAGAMENTO_FATURA);
   });
 
   isso('tira do total um lancamento que contava', () => {
@@ -174,13 +175,42 @@ descrever('Estado da aplicação', () => {
       lancamentos: [{ id: 'a2', valor: -100, naoGasto: false }],
       arquivos: []
     });
-    despachar(ACOES.ALTERNAR_NAO_GASTO, 'a2');
-    esperar(obter().lancamentos[0].naoGasto).igual(MOTIVOS_NAO_GASTO.MANUAL);
+    despachar(ACOES.DEFINIR_FORA_DO_TOTAL, { ids: ['a2'], fora: true });
+    esperar(estaForaDoTotal(obter().lancamentos[0])).verdadeiro();
+    esperar(motivoForaDoTotal(obter().lancamentos[0])).igual(MOTIVOS_NAO_GASTO.MANUAL);
   });
 
-  isso('ignora alternancia de lancamento inexistente', () => {
+  isso('devolve o lancamento a decisao automatica', () => {
     reiniciar();
-    despachar(ACOES.ALTERNAR_NAO_GASTO, 'nao-existe');
+    despachar(ACOES.REGISTRAR_IMPORTACAO, {
+      lancamentos: [{ id: 'a3', valor: -100, naoGasto: MOTIVOS_NAO_GASTO.APLICACAO }],
+      arquivos: []
+    });
+    despachar(ACOES.DEFINIR_FORA_DO_TOTAL, { ids: ['a3'], fora: false });
+    despachar(ACOES.DEFINIR_FORA_DO_TOTAL, { ids: ['a3'], fora: null });
+    esperar(estaForaDoTotal(obter().lancamentos[0])).verdadeiro();
+    esperar(motivoForaDoTotal(obter().lancamentos[0])).igual(MOTIVOS_NAO_GASTO.APLICACAO);
+  });
+
+  isso('tira do total vários selecionados de uma vez', () => {
+    reiniciar();
+    despachar(ACOES.REGISTRAR_IMPORTACAO, {
+      lancamentos: [
+        { id: 'b1', valor: -100, descricaoOriginal: 'UM', naoGasto: false },
+        { id: 'b2', valor: -200, descricaoOriginal: 'DOIS', naoGasto: false },
+        { id: 'b3', valor: -300, descricaoOriginal: 'TRES', naoGasto: false }
+      ],
+      arquivos: []
+    });
+    despachar(ACOES.DEFINIR_FORA_DO_TOTAL, { ids: ['b1', 'b3'], fora: true });
+
+    const fora = obter().lancamentos.filter(estaForaDoTotal).map((lancamento) => lancamento.id);
+    esperar(fora).igual(['b1', 'b3']);
+  });
+
+  isso('ignora marcacao sem nenhum lancamento alvo', () => {
+    reiniciar();
+    despachar(ACOES.DEFINIR_FORA_DO_TOTAL, { ids: [], fora: true });
     esperar(obter().lancamentos.length).igual(0);
   });
 
@@ -281,6 +311,33 @@ descrever('Estado da aplicação', () => {
     esperar(obter().selecao).igual(['x2']);
     despachar(ACOES.LIMPAR_SELECAO);
     esperar(obter().selecao.length).igual(0);
+  });
+
+  isso('seleciona de uma vez a lista inteira que recebeu', () => {
+    reiniciar();
+    despachar(ACOES.DEFINIR_SELECAO, ['a', 'b', 'c']);
+    esperar(obter().selecao).igual(['a', 'b', 'c']);
+  });
+
+  isso('selecionar tudo nao repete o que ja estava selecionado', () => {
+    reiniciar();
+    despachar(ACOES.ALTERNAR_SELECAO, 'a');
+    despachar(ACOES.DEFINIR_SELECAO, ['a', 'b']);
+    esperar(obter().selecao).igual(['a', 'b']);
+  });
+
+  isso('selecionar tudo com lista vazia desmarca todos', () => {
+    reiniciar();
+    despachar(ACOES.DEFINIR_SELECAO, ['a', 'b']);
+    despachar(ACOES.DEFINIR_SELECAO, []);
+    esperar(obter().selecao.length).igual(0);
+  });
+
+  isso('depois de selecionar tudo, desmarcar um deixa a selecao parcial', () => {
+    reiniciar();
+    despachar(ACOES.DEFINIR_SELECAO, ['a', 'b', 'c']);
+    despachar(ACOES.ALTERNAR_SELECAO, 'b');
+    esperar(obter().selecao).igual(['a', 'c']);
   });
 
   isso('troca a aba de regras', () => {

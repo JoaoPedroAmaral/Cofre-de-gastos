@@ -24,11 +24,11 @@ const MENSAGENS = Object.freeze({
   SEM_LANCAMENTOS: 'Nenhum lançamento encontrado no arquivo.'
 });
 
-export async function importarArquivos(arquivos) {
+export async function importarArquivos(arquivos, identidade) {
   const relatorio = { lancamentos: [], arquivos: [] };
 
   for (const arquivo of arquivos) {
-    const resultado = await importarArquivo(arquivo);
+    const resultado = await importarArquivo(arquivo, identidade);
     relatorio.arquivos.push(resultado);
     relatorio.lancamentos.push(...(resultado.lancamentos || []));
   }
@@ -36,13 +36,13 @@ export async function importarArquivos(arquivos) {
   return relatorio;
 }
 
-export function construirLancamentos(brutos) {
+export function construirLancamentos(brutos, identidade) {
   const lancamentos = [];
   const erros = [];
 
   brutos.forEach((bruto) => {
     try {
-      lancamentos.push(preparar(bruto));
+      lancamentos.push(preparar(bruto, identidade));
     } catch (erro) {
       erros.push(erro.message);
     }
@@ -51,40 +51,40 @@ export function construirLancamentos(brutos) {
   return { lancamentos, erros };
 }
 
-async function importarArquivo(arquivo) {
+async function importarArquivo(arquivo, identidade) {
   try {
-    return await processar(arquivo);
+    return await processar(arquivo, identidade);
   } catch (erro) {
     return falha(arquivo, erro.message);
   }
 }
 
-async function processar(arquivo) {
+async function processar(arquivo, identidade) {
   const { nome, bytes } = arquivo;
   const amostra = decodificar(bytes.slice(0, LIMITE_INSPECAO_TEXTO));
   const formato = detectar(bytes, amostra);
 
   if (formato === FORMATOS.PDF) {
-    return processarPdf(nome, bytes);
+    return processarPdf(nome, bytes, identidade);
   }
   if (formato === FORMATOS.DESCONHECIDO) {
     return falha(arquivo, MENSAGENS.FORMATO_DESCONHECIDO);
   }
   if (formato === FORMATOS.OFX) {
-    return processarOfx(nome, decodificar(bytes));
+    return processarOfx(nome, decodificar(bytes), identidade);
   }
 
   const tabela = formato === FORMATOS.XLSX ? await xlsx.analisar(bytes) : csv.analisar(decodificar(bytes));
-  return processarTabela(nome, formato, tabela);
+  return processarTabela(nome, formato, tabela, identidade);
 }
 
-async function processarPdf(nome, bytes) {
+async function processarPdf(nome, bytes, identidade) {
   const { brutos, pendencias, banco } = await pdf.analisar(bytes, nome);
   if (brutos.length === 0) {
     return { ...falha({ nome }, pdf.MENSAGENS_PDF.SEM_LANCAMENTOS), pendencias };
   }
 
-  const { lancamentos, erros } = construirLancamentos(brutos);
+  const { lancamentos, erros } = construirLancamentos(brutos, identidade);
   return {
     nome,
     formato: FORMATOS.PDF,
@@ -97,13 +97,13 @@ async function processarPdf(nome, bytes) {
   };
 }
 
-function processarOfx(nome, texto) {
+function processarOfx(nome, texto, identidade) {
   const brutos = ofx.analisar(texto, nome);
   if (brutos.length === 0) {
     return falha({ nome }, MENSAGENS.SEM_LANCAMENTOS);
   }
 
-  const { lancamentos, erros } = construirLancamentos(brutos);
+  const { lancamentos, erros } = construirLancamentos(brutos, identidade);
   return {
     nome,
     formato: FORMATOS.OFX,
@@ -113,7 +113,7 @@ function processarOfx(nome, texto) {
   };
 }
 
-function processarTabela(nome, formato, tabela) {
+function processarTabela(nome, formato, tabela, identidade) {
   if (tabela.cabecalho.length === 0) {
     return falha({ nome }, MENSAGENS.SEM_LANCAMENTOS);
   }
@@ -134,7 +134,7 @@ function processarTabela(nome, formato, tabela) {
   }
 
   const brutos = aplicarMapeamento(tabela, mapeamento, { arquivo: nome });
-  const { lancamentos, erros } = construirLancamentos(brutos);
+  const { lancamentos, erros } = construirLancamentos(brutos, identidade);
 
   return {
     nome,

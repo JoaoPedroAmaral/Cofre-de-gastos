@@ -1059,6 +1059,10 @@ select.etiqueta.etiqueta--vazia {
   min-width: 0;
 }
 
+.destaque__valor--entrada {
+  color: var(--cor-entrada);
+}
+
 .destaque__valor {
   font-size: var(--texto-gigante);
   font-weight: 700;
@@ -1775,4 +1779,69 @@ select.etiqueta.etiqueta--vazia {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+.ajustes__secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding: var(--espaco-5);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background: var(--cor-superficie);
+}
+
+.ajustes__ajuda {
+  max-width: 68ch;
+  color: var(--cor-texto-fraco);
+  font-size: var(--texto-sm);
+  line-height: 1.5;
+}
+
+.ajustes__campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--espaco-5);
+  margin-top: var(--espaco-2);
+}
+
+.ajustes__campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.ajustes__entrada {
+  display: flex;
+  gap: var(--espaco-2);
+}
+
+.ajustes__entrada .campo__entrada {
+  flex: 1;
+  min-width: 0;
+}
+
+.ajustes__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.ajustes__ficha {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding: var(--espaco-1) var(--espaco-1) var(--espaco-1) var(--espaco-3);
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-sm);
+  background: var(--cor-superficie-alta);
+  font-size: var(--texto-sm);
+}
+
+.ajustes__efeito {
+  margin-top: var(--espaco-2);
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--cor-borda);
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
 }

@@ -2,7 +2,6 @@ import {
   ABAS_PLANILHA,
   ACOES,
   CATEGORIA_SEM_CLASSIFICACAO,
-  OPERADORES_REGRA,
   COLUNAS_PLANILHA,
   ROTULOS_ABA,
   ROTULOS_METODO,
@@ -10,9 +9,9 @@ import {
   TIPOS_COLUNA
 } from '../nucleo/constantes.js';
 import { despachar } from '../estado/store.js';
-import { ROTULOS_NAO_GASTO } from '../nucleo/naoGasto.js';
-import { criarRegra, alcance } from '../nucleo/regras.js';
+import { estaForaDoTotal, rotuloForaDoTotal } from '../nucleo/naoGasto.js';
 import { criarElemento, estadoVazio } from './componentes.js';
+import { faixaDeSugestao } from './sugestoes.js';
 import { filtrosDaPlanilha, navegacaoDeMes } from './filtros.js';
 import { aplicar } from '../nucleo/filtrar.js';
 import { mesesDisponiveis } from '../nucleo/agregar.js';
@@ -33,12 +32,14 @@ const TEXTOS = Object.freeze({
   SEM_RESULTADO_TEXTO: 'Troque de aba para ver os outros lançamentos.',
   CATEGORIZAR: 'Categorizar',
   INCLUIR: 'Incluir no total',
+  TIRAR: 'Tirar do total',
+  AUTOMATICO: 'Voltar ao automático',
   FORA: 'Fora do total',
+  SELECIONAR_TUDO: 'Selecionar todos os lançamentos desta lista',
+  LIMPAR_TUDO: 'Tirar a seleção de todos',
   SELECIONADOS: 'selecionados',
   EM_LOTE: 'Categorizar como',
   LIMPAR: 'Limpar seleção',
-  AGORA_NAO: 'Agora não',
-  CRIAR_REGRA: 'Criar regra',
   EDITADO: 'editado'
 });
 
@@ -116,11 +117,11 @@ function barraDeAbas(estado, noPeriodo) {
 function filtrarPorAba(lancamentos, aba) {
   if (aba === ABAS_PLANILHA.SEM_CATEGORIA) {
     return lancamentos.filter(
-      (lancamento) => lancamento.naoGasto === false && lancamento.categoria === CATEGORIA_SEM_CLASSIFICACAO
+      (lancamento) => !estaForaDoTotal(lancamento) && lancamento.categoria === CATEGORIA_SEM_CLASSIFICACAO
     );
   }
   if (aba === ABAS_PLANILHA.FORA_DO_TOTAL) {
-    return lancamentos.filter((lancamento) => lancamento.naoGasto !== false);
+    return lancamentos.filter(estaForaDoTotal);
   }
   return lancamentos;
 }
@@ -131,17 +132,19 @@ function tabela(lancamentos, estado) {
   lancamentos.forEach((lancamento) => {
     corpo.append(linha(lancamento, estado));
     if (estado.sugestao && estado.sugestao.id === lancamento.id) {
-      corpo.append(linhaSugestao(estado));
+      corpo.append(faixaDeSugestao(estado, COLUNAS_DA_TABELA));
     }
   });
 
-  return criarElemento('table', { class: 'tabela' }, [cabecalho(estado.ordenacao), corpo]);
+  return criarElemento('table', { class: 'tabela' }, [cabecalho(estado, lancamentos), corpo]);
 }
 
-function cabecalho(ordenacao) {
+function cabecalho(estado, lancamentos) {
+  const ordenacao = estado.ordenacao;
+
   return criarElemento('thead', {}, [
     criarElemento('tr', {}, [
-      criarElemento('th', { class: 'tabela__selecao' }),
+      criarElemento('th', { class: 'tabela__selecao' }, [marcadorDeTudo(estado, lancamentos)]),
       ...COLUNAS_PLANILHA.map((coluna) =>
         criarElemento('th', { class: classeDaColuna(coluna) }, [
           criarElemento(
@@ -162,12 +165,31 @@ function cabecalho(ordenacao) {
   ]);
 }
 
+function marcadorDeTudo(estado, lancamentos) {
+  const ids = lancamentos.map((lancamento) => lancamento.id);
+  const selecionados = ids.filter((id) => estado.selecao.includes(id));
+  const todos = ids.length > 0 && selecionados.length === ids.length;
+
+  const marcador = criarElemento('input', {
+    type: 'checkbox',
+    'aria-label': todos ? TEXTOS.LIMPAR_TUDO : TEXTOS.SELECIONAR_TUDO,
+    title: todos ? TEXTOS.LIMPAR_TUDO : TEXTOS.SELECIONAR_TUDO,
+    disabled: ids.length === 0 ? 'disabled' : null,
+    onChange: () => despachar(ACOES.DEFINIR_SELECAO, todos ? [] : ids)
+  });
+
+  marcador.checked = todos;
+  marcador.indeterminate = selecionados.length > 0 && !todos;
+
+  return marcador;
+}
+
 function classeDaColuna(coluna) {
   return coluna.tipo === TIPOS_COLUNA.MOEDA ? 'tabela__coluna-valor' : TEXTO_VAZIO;
 }
 
 function linha(lancamento, estado) {
-  const fora = lancamento.naoGasto !== false;
+  const fora = estaForaDoTotal(lancamento);
   const selecionado = estado.selecao.includes(lancamento.id);
 
   const marcador = criarElemento('input', {
@@ -207,25 +229,31 @@ function classeLinha(fora, selecionado) {
 
 function celulaCategoria(lancamento, estado, fora) {
   if (fora) {
-    return criarElemento('div', { class: 'lancamento' }, [
+    return criarElemento('div', { class: 'celula-categoria' }, [
       criarElemento('span', {
         class: 'etiqueta etiqueta--fora',
-        texto: `${TEXTOS.FORA} · ${ROTULOS_NAO_GASTO[lancamento.naoGasto] || lancamento.naoGasto}`
+        texto: `${TEXTOS.FORA} · ${rotuloForaDoTotal(lancamento)}`
       }),
-      criarElemento('button', {
-        class: 'botao botao--discreto',
-        type: 'button',
-        texto: TEXTOS.INCLUIR,
-        onClick: () => despachar(ACOES.ALTERNAR_NAO_GASTO, lancamento.id)
-      })
+      botaoDeTotal(lancamento, TEXTOS.INCLUIR, false),
+      lancamento.foraDoTotalManual === null ? null : botaoDeTotal(lancamento, TEXTOS.AUTOMATICO, null)
     ]);
   }
 
   return criarElemento('div', { class: 'celula-categoria' }, [
     seletorCategoria(lancamento, estado),
     ...lancamento.tags.map((tag) => criarElemento('span', { class: 'tag', texto: tag })),
-    lancamento.revisadoManual ? criarElemento('span', { class: 'tag', texto: TEXTOS.EDITADO }) : null
+    lancamento.revisadoManual ? criarElemento('span', { class: 'tag', texto: TEXTOS.EDITADO }) : null,
+    botaoDeTotal(lancamento, TEXTOS.TIRAR, true)
   ]);
+}
+
+function botaoDeTotal(lancamento, rotulo, fora) {
+  return criarElemento('button', {
+    class: 'botao botao--discreto',
+    type: 'button',
+    texto: rotulo,
+    onClick: () => despachar(ACOES.DEFINIR_FORA_DO_TOTAL, { ids: [lancamento.id], fora })
+  });
 }
 
 function seletorCategoria(lancamento, estado) {
@@ -250,52 +278,6 @@ function seletorCategoria(lancamento, estado) {
   return seletor;
 }
 
-function linhaSugestao(estado) {
-  const { sugestao } = estado;
-  const regra = criarRegra({
-    operador: OPERADORES_REGRA.CONTEM,
-    termo: sugestao.chave,
-    categoria: sugestao.categoria
-  });
-  const atingidos = alcance(regra, estado.lancamentos);
-
-  return criarElemento('tr', { class: 'linha--sugestao' }, [
-    criarElemento('td', { colspan: String(COLUNAS_DA_TABELA) }, [
-      criarElemento('div', { class: 'sugestao' }, [
-        criarElemento('span', { class: 'sugestao__texto' }, [
-          criarElemento('span', { texto: 'Usar ' }),
-          criarElemento('b', { texto: sugestao.categoria }),
-          criarElemento('span', { texto: ' sempre que aparecer ' }),
-          criarElemento('span', { class: 'mono', texto: sugestao.chave }),
-          criarElemento('span', { texto: '? ' }),
-          criarElemento('span', {
-            class: 'fraco',
-            texto: `Vale para ${atingidos.total} lançamentos e para as próximas importações.`
-          })
-        ]),
-        criarElemento('button', {
-          class: 'botao botao--discreto',
-          type: 'button',
-          texto: TEXTOS.AGORA_NAO,
-          onClick: () => despachar(ACOES.DESCARTAR_SUGESTAO)
-        }),
-        criarElemento('button', {
-          class: 'botao botao--principal',
-          type: 'button',
-          texto: TEXTOS.CRIAR_REGRA,
-          onClick: () =>
-            despachar(ACOES.CRIAR_REGRA, {
-              operador: regra.operador,
-              termo: regra.termo,
-              categoria: regra.categoria,
-              tags: regra.tags
-            })
-        })
-      ])
-    ])
-  ]);
-}
-
 function barraDeSelecao(estado) {
   const seletor = criarElemento(
     'select',
@@ -318,6 +300,9 @@ function barraDeSelecao(estado) {
   return criarElemento('div', { class: 'barra-selecao', role: 'status' }, [
     criarElemento('span', { texto: `${estado.selecao.length} ${TEXTOS.SELECIONADOS}` }),
     seletor,
+    acaoEmLote(estado, TEXTOS.TIRAR, true),
+    acaoEmLote(estado, TEXTOS.INCLUIR, false),
+    acaoEmLote(estado, TEXTOS.AUTOMATICO, null),
     criarElemento('button', {
       class: 'botao botao--discreto',
       type: 'button',
@@ -325,6 +310,15 @@ function barraDeSelecao(estado) {
       onClick: () => despachar(ACOES.LIMPAR_SELECAO)
     })
   ]);
+}
+
+function acaoEmLote(estado, rotulo, fora) {
+  return criarElemento('button', {
+    class: 'botao',
+    type: 'button',
+    texto: rotulo,
+    onClick: () => despachar(ACOES.DEFINIR_FORA_DO_TOTAL, { ids: estado.selecao, fora })
+  });
 }
 
 function detalhe(lancamento) {
@@ -368,7 +362,7 @@ function ordenar(lancamentos, ordenacao) {
 }
 
 function prioridadeDe(lancamento) {
-  if (lancamento.naoGasto === false && lancamento.categoria === CATEGORIA_SEM_CLASSIFICACAO) {
+  if (!estaForaDoTotal(lancamento) && lancamento.categoria === CATEGORIA_SEM_CLASSIFICACAO) {
     return 0;
   }
   return 1;

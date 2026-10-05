@@ -25,7 +25,8 @@ export async function carregarDoCofre(perfilId, chave) {
   return {
     lancamentos: lancamentos ?? [],
     regras: configuracao?.regras ?? [],
-    categorias: configuracao?.categorias ?? null
+    categorias: configuracao?.categorias ?? null,
+    identidade: configuracao?.identidade ?? null
   };
 }
 
@@ -35,6 +36,7 @@ export async function gravarNoCofre(perfilId, chave, estado) {
     gravar(perfilId, chave, COLECOES.CONFIGURACAO, {
       regras: estado.regras.filter((regra) => regra.origem === ORIGENS_REGRA.USUARIO),
       categorias: estado.categorias,
+      identidade: estado.identidade,
       mapeamentos: listarMapeamentos()
     })
   ]);

@@ -6,6 +6,8 @@ import './casos/datas.js';
 import './casos/importacao.js';
 import './casos/bancos.js';
 import './casos/fatura.js';
+import './casos/extrato.js';
+import './casos/foraDoTotal.js';
 import './casos/normalizacao.js';
 import './casos/integridade.js';
 import './casos/classificacao.js';

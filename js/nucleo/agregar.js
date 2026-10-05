@@ -1,7 +1,7 @@
 import { CATEGORIA_SEM_CLASSIFICACAO } from './constantes.js';
 import { mesDe } from './datas.js';
 import { dataDeCompetencia } from './modelo.js';
-import { ehEntrada, ehGasto } from './naoGasto.js';
+import { ehEntrada, ehGasto, estaForaDoTotal } from './naoGasto.js';
 
 const TEXTO_VAZIO = '';
 const LIMITE_COMERCIANTES = 10;
@@ -9,7 +9,7 @@ const LIMITE_COMERCIANTES = 10;
 export function metricas(lancamentos) {
   const gastos = lancamentos.filter(ehGasto);
   const entradas = lancamentos.filter(ehEntrada);
-  const foraDoTotal = lancamentos.filter((lancamento) => lancamento.naoGasto !== false);
+  const foraDoTotal = lancamentos.filter(estaForaDoTotal);
   const semCategoria = gastos.filter((lancamento) => lancamento.categoria === CATEGORIA_SEM_CLASSIFICACAO);
 
   const totalGasto = somar(gastos);

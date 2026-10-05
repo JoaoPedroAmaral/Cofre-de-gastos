@@ -82,3 +82,59 @@ export const CSV_NUBANK_CONTA = `Data,Valor,Identificador,Descrição
 
 export const CSV_NUBANK_CARTAO_COM_EXTRA = `date,category,title,amount
 2026-09-03,transport,Uber *trip,23.45`;
+
+export const CSV_PICPAY_CONTA = `data,hora,tipo,"origem / destino",valor,"forma de pagamento"
+2026-09-30,14:53,"Pix enviado","MARIA SILVA SOUZA","−R$ 40,00","Com saldo"
+2026-09-30,14:34,"Pix recebido","PADARIA CENTRAL LTDA","+R$ 220,00",
+2026-09-29,21:34,"Pix enviado",AMUNDIAL,"−R$ 29,98","Com saldo"
+2026-09-28,10:02,"Pagamento realizado","CONSTRUTORA EXEMPLO SA","−R$ 1.320,88","Com saldo"`;
+
+export const OFX_BB_CONTA = `OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+CHARSET:1252
+
+<OFX>
+  <SIGNONMSGSRSV1>
+   <SONRS>
+    <FI>
+     <ORG>Banco do Brasil</ORG>
+     <FID>1</FID>
+    </FI>
+   </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <STMTRS>
+        <CURDEF>BRL</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>1</BANKID>
+          <BRANCHID>1606-3</BRANCHID>
+          <ACCTID>1009671-X</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+            <DTSTART>20260810000000[-3:BRT]</DTSTART>
+            <DTEND>20260930000000[-3:BRT]</DTEND>
+            <STMTTRN>
+              <TRNTYPE>CREDIT</TRNTYPE>
+              <DTPOSTED>20260904000000[-3:BRT]</DTPOSTED>
+              <TRNAMT>3144.36</TRNAMT>
+              <FITID>2026090403144360</FITID>
+              <CHECKNUM>41551473348501</CHECKNUM>
+              <NAME>Pix - Recebido</NAME>
+              <MEMO>04/09 15:51 40985911000130 COOPERATIVA EXEMPLO</MEMO>
+            </STMTTRN>
+            <STMTTRN>
+              <TRNTYPE>DEBIT</TRNTYPE>
+              <DTPOSTED>20260904000000[-3:BRT]</DTPOSTED>
+              <TRNAMT>-3144.00</TRNAMT>
+              <FITID>2026090413144000</FITID>
+              <NAME>Pix - Enviado</NAME>
+              <MEMO>04/09 15:53 Maria Silva Souza</MEMO>
+            </STMTTRN>
+      </BANKTRANLIST>
+    </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>`;

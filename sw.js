@@ -1,4 +1,4 @@
-const VERSAO = 'v2';
+const VERSAO = 'v7';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const METODO_LIDO = 'GET';
@@ -30,7 +30,10 @@ const ESSENCIAIS = [
   '/js/exportacao/xlsx.js',
   '/js/importadores/csv.js',
   '/js/importadores/detector.js',
+  '/js/importadores/extratos/colunas.js',
+  '/js/importadores/extratos/picpay.js',
   '/js/importadores/importar.js',
+  '/js/importadores/linhaCsv.js',
   '/js/importadores/mapeamentos.js',
   '/js/importadores/ofx.js',
   '/js/importadores/pdf.js',
@@ -39,6 +42,7 @@ const ESSENCIAIS = [
   '/js/importadores/xlsx.js',
   '/js/importadores/bancos/index.js',
   '/js/importadores/bancos/nubank.js',
+  '/js/importadores/bancos/picpay.js',
   '/js/importadores/faturas/emissores.js',
   '/js/importadores/faturas/lancamentos.js',
   '/js/importadores/faturas/layout.js',
@@ -51,11 +55,14 @@ const ESSENCIAIS = [
   '/js/nucleo/dinheiro.js',
   '/js/nucleo/filtrar.js',
   '/js/nucleo/identidade.js',
+  '/js/nucleo/identidadePessoal.js',
   '/js/nucleo/modelo.js',
   '/js/nucleo/naoGasto.js',
   '/js/nucleo/normalizar.js',
+  '/js/nucleo/palavras.js',
   '/js/nucleo/preparar.js',
   '/js/nucleo/regras.js',
+  '/js/ui/ajustes.js',
   '/js/ui/cadeado.js',
   '/js/ui/componentes.js',
   '/js/ui/exportar.js',
@@ -70,6 +77,7 @@ const ESSENCIAIS = [
   '/js/ui/preferencias.js',
   '/js/ui/privacidade.js',
   '/js/ui/regras.js',
+  '/js/ui/sugestoes.js',
   '/js/ui/upload.js',
   '/vendor/fontes/geist-mono-variavel.woff2',
   '/vendor/fontes/geist-variavel.woff2',

@@ -1,7 +1,8 @@
 import { indicePorNome } from '../tabela.js';
 import { PERFIS_NUBANK } from './nubank.js';
+import { PERFIS_PICPAY } from './picpay.js';
 
-export const PERFIS_DE_BANCO = Object.freeze([...PERFIS_NUBANK]);
+export const PERFIS_DE_BANCO = Object.freeze([...PERFIS_NUBANK, ...PERFIS_PICPAY]);
 
 const COLUNA_AUSENTE = -1;
 const SEPARADOR_DESCRICAO = ' · ';
@@ -46,10 +47,13 @@ function atende(cabecalho, perfil) {
 
 function resolverColunas(cabecalho, nomes) {
   return Object.entries(nomes).reduce((colunas, [papel, nome]) => {
-    const indice = indicePorNome(cabecalho, nome);
-    if (indice !== COLUNA_AUSENTE) {
-      colunas[papel] = indice;
+    const indices = [nome].flat().map((candidato) => indicePorNome(cabecalho, candidato));
+    const encontrados = indices.filter((indice) => indice !== COLUNA_AUSENTE);
+
+    if (encontrados.length === 0) {
+      return colunas;
     }
+    colunas[papel] = Array.isArray(nome) ? encontrados : encontrados[0];
     return colunas;
   }, {});
 }

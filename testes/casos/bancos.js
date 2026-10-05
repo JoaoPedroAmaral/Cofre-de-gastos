@@ -10,9 +10,13 @@ import {
   CSV_NUBANK_CARTAO,
   CSV_NUBANK_CARTAO_COM_EXTRA,
   CSV_NUBANK_CONTA,
+  CSV_PICPAY_CONTA,
   CSV_PONTO_VIRGULA,
+  OFX_BB_CONTA,
   bytesDe
 } from '../fixtures/extratos.js';
+import { detectar, FORMATOS, detectarDelimitador } from '../../js/importadores/detector.js';
+import { deCentavos } from '../../js/nucleo/dinheiro.js';
 
 function arquivo(nome, conteudo) {
   return { nome, bytes: bytesDe(conteudo) };
@@ -143,5 +147,88 @@ descrever('Importação por adaptador de banco', () => {
     } finally {
       remover(assinatura);
     }
+  });
+});
+
+descrever('Extrato do PicPay em CSV', () => {
+  isso('reconhece o arquivo como CSV mesmo com virgula decimal dentro de aspas', () => {
+    const bytes = bytesDe(CSV_PICPAY_CONTA);
+    esperar(detectar(bytes, CSV_PICPAY_CONTA)).igual(FORMATOS.CSV);
+    esperar(detectarDelimitador(CSV_PICPAY_CONTA)).igual(',');
+  });
+
+  isso('o valor entre aspas continua uma celula so', () => {
+    const tabela = analisarCsv(CSV_PICPAY_CONTA);
+    esperar(tabela.cabecalho.length).igual(6);
+    esperar(tabela.linhas[0].length).igual(6);
+    esperar(tabela.linhas[0][4]).igual('−R$ 40,00');
+  });
+
+  isso('reconhece o perfil do extrato de conta', () => {
+    const tabela = analisarCsv(CSV_PICPAY_CONTA);
+    const mapeamento = reconhecer(tabela.cabecalho);
+    esperar(mapeamento.banco).igual('PicPay');
+    esperar(mapeamento.conta).igual('Conta');
+  });
+
+  isso('a descricao junta o tipo com a contraparte', async () => {
+    const relatorio = await importarArquivos([arquivo('picpay.csv', CSV_PICPAY_CONTA)]);
+    const lancamento = porDescricao(relatorio.lancamentos, 'PADARIA CENTRAL');
+    esperar(lancamento.descricaoOriginal).igual('Pix recebido PADARIA CENTRAL LTDA');
+  });
+
+  isso('a forma de pagamento nao entra na descricao', async () => {
+    const relatorio = await importarArquivos([arquivo('picpay.csv', CSV_PICPAY_CONTA)]);
+    const comSaldo = relatorio.lancamentos.filter((item) => item.descricaoOriginal.includes('Com saldo'));
+    esperar(comSaldo.length).igual(0);
+  });
+
+  isso('entende o menos Unicode e o mais que o PicPay imprime', async () => {
+    const relatorio = await importarArquivos([arquivo('picpay.csv', CSV_PICPAY_CONTA)]);
+    esperar(deCentavos(porDescricao(relatorio.lancamentos, 'MARIA SILVA').valor)).igual(-40);
+    esperar(deCentavos(porDescricao(relatorio.lancamentos, 'PADARIA CENTRAL').valor)).igual(220);
+  });
+
+  isso('le o valor com separador de milhar', async () => {
+    const relatorio = await importarArquivos([arquivo('picpay.csv', CSV_PICPAY_CONTA)]);
+    esperar(deCentavos(porDescricao(relatorio.lancamentos, 'CONSTRUTORA').valor)).igual(-1320.88);
+  });
+
+  isso('importa todas as linhas, sem rejeitar nenhuma', async () => {
+    const relatorio = await importarArquivos([arquivo('picpay.csv', CSV_PICPAY_CONTA)]);
+    esperar(relatorio.arquivos[0].resultado).igual(RESULTADOS.IMPORTADO);
+    esperar(relatorio.lancamentos.length).igual(4);
+    esperar(relatorio.arquivos[0].erros.length).igual(0);
+  });
+});
+
+descrever('Extrato do Banco do Brasil em OFX', () => {
+  isso('importa sem pedir mapeamento', async () => {
+    const relatorio = await importarArquivos([arquivo('bb.ofx', OFX_BB_CONTA)]);
+    esperar(relatorio.arquivos[0].resultado).igual(RESULTADOS.IMPORTADO);
+    esperar(relatorio.lancamentos.length).igual(2);
+  });
+
+  isso('junta o tipo da operacao com o historico, que vem em campos separados', async () => {
+    const relatorio = await importarArquivos([arquivo('bb.ofx', OFX_BB_CONTA)]);
+    const recebido = porDescricao(relatorio.lancamentos, 'COOPERATIVA EXEMPLO');
+    esperar(recebido.descricaoOriginal.startsWith('Pix - Recebido')).verdadeiro();
+    esperar(deCentavos(recebido.valor)).igual(3144.36);
+  });
+
+  isso('guarda o banco e a conta do cabecalho do arquivo', async () => {
+    const relatorio = await importarArquivos([arquivo('bb.ofx', OFX_BB_CONTA)]);
+    esperar(relatorio.lancamentos[0].banco).igual('Banco do Brasil');
+    esperar(relatorio.lancamentos[0].conta).igual('1009671-X');
+  });
+
+  isso('o salario entra como entrada e a transferencia para voce mesmo nao', async () => {
+    const identidade = { nomes: ['Maria Silva Souza'], documentos: [], contas: [] };
+    const relatorio = await importarArquivos([arquivo('bb.ofx', OFX_BB_CONTA)], identidade);
+    const recebido = porDescricao(relatorio.lancamentos, 'COOPERATIVA EXEMPLO');
+    const enviado = porDescricao(relatorio.lancamentos, 'Maria Silva Souza');
+
+    esperar(recebido.naoGasto).falso();
+    esperar(enviado.naoGasto).igual(MOTIVOS_NAO_GASTO.CONTA_PROPRIA);
   });
 });

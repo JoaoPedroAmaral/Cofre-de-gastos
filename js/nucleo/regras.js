@@ -1,5 +1,6 @@
 import { OPERADORES_REGRA, ORIGENS_REGRA } from './constantes.js';
 import { normalizarTexto } from './normalizar.js';
+import { contemTermo } from './palavras.js';
 import { REGRAS_SEMENTE } from '../dados/regrasSemente.js';
 
 const TEXTO_VAZIO = '';
@@ -73,7 +74,7 @@ export function avaliar(regra, lancamento) {
   if (regra.operador === OPERADORES_REGRA.COMECA_COM) {
     return alvos.some((alvo) => alvo.startsWith(termo));
   }
-  return alvos.some((alvo) => alvo.includes(termo));
+  return alvos.some((alvo) => contemTermo(alvo, termo));
 }
 
 export function ordenar(regras) {

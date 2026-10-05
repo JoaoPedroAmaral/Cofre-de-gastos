@@ -1,6 +1,7 @@
 import { ACOES, NIVEIS_AVISO, TELAS } from '../nucleo/constantes.js';
 import { despachar, obter } from '../estado/store.js';
 import { mesclar } from '../nucleo/deduplicar.js';
+import { estaForaDoTotal } from '../nucleo/naoGasto.js';
 import { RESULTADOS, construirLancamentos, importarArquivos } from '../importadores/importar.js';
 import { aplicarMapeamento } from '../importadores/tabela.js';
 import { descreverPerfil } from '../importadores/bancos/index.js';
@@ -228,7 +229,7 @@ async function processar(arquivos) {
   }
 
   const lidos = await Promise.all(arquivos.map(lerArquivo));
-  const resultado = await importarArquivos(lidos);
+  const resultado = await importarArquivos(lidos, obter().identidade);
 
   registrar(resultado.arquivos);
 
@@ -239,7 +240,7 @@ async function processar(arquivos) {
 
 function concluirMapeamento(item, mapeamento) {
   const brutos = aplicarMapeamento(item.tabela, mapeamento, { arquivo: item.nome });
-  const { lancamentos, erros } = construirLancamentos(brutos);
+  const { lancamentos, erros } = construirLancamentos(brutos, obter().identidade);
 
   registrar([{ ...item, resultado: RESULTADOS.IMPORTADO, lancamentos, erros }]);
 }
@@ -268,7 +269,7 @@ function resumir(item, mesclagem) {
     banco: bancoDe(mesclagem.inseridos),
     quantidade: mesclagem.inseridos.length,
     ignorados: mesclagem.ignorados,
-    foraDoTotal: mesclagem.inseridos.filter((lancamento) => lancamento.naoGasto !== false).length,
+    foraDoTotal: mesclagem.inseridos.filter(estaForaDoTotal).length,
     rejeitadas: (item.erros || []).length
   };
 }

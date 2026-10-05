@@ -13,7 +13,7 @@ export const REGRAS_SEMENTE = Object.freeze([
   { termo: 'HAMBURGUERIA', categoria: 'Alimentação' },
   { termo: 'CHURRASCARIA', categoria: 'Alimentação' },
   { termo: 'SUBWAY', categoria: 'Alimentação' },
-  { termo: 'MCDONALDS', categoria: 'Alimentação' },
+  { termo: 'MCDONALD', categoria: 'Alimentação' },
   { termo: 'BURGER KING', categoria: 'Alimentação' },
   { termo: 'BOB S', categoria: 'Alimentação' },
   { termo: 'HABIBS', categoria: 'Alimentação' },

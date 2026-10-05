@@ -7,15 +7,24 @@ import {
   COMPETENCIA,
   ESTADOS_COFRE,
   FORMATOS_EXPORTACAO,
-  MOTIVOS_NAO_GASTO,
   ORIGENS_REGRA,
   TELAS,
   TELA_INICIAL,
-  TEMAS
+  TEMAS,
+  TIPOS_IDENTIDADE,
+  TIPOS_SUGESTAO
 } from '../nucleo/constantes.js';
 import { criarRegra, regrasSemente } from '../nucleo/regras.js';
 import { reclassificar } from '../nucleo/classificar.js';
 import { mesesDisponiveis } from '../nucleo/agregar.js';
+import { migrar } from '../nucleo/modelo.js';
+import { reavaliar } from '../nucleo/naoGasto.js';
+import {
+  acrescentarTermo,
+  candidatosDe,
+  combina,
+  identidadeVazia
+} from '../nucleo/identidadePessoal.js';
 
 const filtrosIniciais = Object.freeze({
   mes: '',
@@ -45,7 +54,8 @@ const estadoInicial = Object.freeze({
   cofre: Object.freeze({ situacao: ESTADOS_COFRE.VERIFICANDO, perfil: null, perfis: [], erro: '' }),
   lancamentos: [],
   regras: Object.freeze(regrasSemente()),
-  categorias: CATEGORIAS_PADRAO
+  categorias: CATEGORIAS_PADRAO,
+  identidade: identidadeVazia()
 });
 
 let estado = estadoInicial;
@@ -94,14 +104,18 @@ function reduzir(atual, acao, dados) {
       return definirOrdenacao(atual, dados);
     case ACOES.DEFINIR_ABA:
       return definirAba(atual, dados);
-    case ACOES.ALTERNAR_NAO_GASTO:
-      return alternarNaoGasto(atual, dados);
+    case ACOES.DEFINIR_FORA_DO_TOTAL:
+      return definirForaDoTotal(atual, dados);
+    case ACOES.DEFINIR_IDENTIDADE:
+      return definirIdentidade(atual, dados);
     case ACOES.DEFINIR_CATEGORIA:
       return definirCategoria(atual, dados);
     case ACOES.ALTERNAR_SELECAO:
       return alternarSelecao(atual, dados);
     case ACOES.LIMPAR_SELECAO:
       return limparSelecao(atual);
+    case ACOES.DEFINIR_SELECAO:
+      return definirSelecao(atual, dados);
     case ACOES.DEFINIR_ABA_REGRAS:
       return definirAbaRegras(atual, dados);
     case ACOES.DESCARTAR_SUGESTAO:
@@ -146,7 +160,8 @@ function registrarImportacao(atual, relatorio) {
     return atual;
   }
 
-  const lancamentos = reclassificar([...atual.lancamentos, ...(relatorio.lancamentos || [])], atual.regras);
+  const recebidos = (relatorio.lancamentos || []).map(migrar);
+  const lancamentos = reclassificar([...atual.lancamentos, ...recebidos], atual.regras);
   const meses = mesesDisponiveis(lancamentos, atual.competencia);
 
   return {
@@ -190,10 +205,10 @@ function definirCategoria(atual, { ids, categoria }) {
     return { ...lancamento, categoria, revisadoManual: true, regra: null };
   });
 
-  return { ...atual, lancamentos, sugestao: sugestaoDe(lancamentos, ids, categoria) };
+  return { ...atual, lancamentos, sugestao: sugestaoDeCategoria(lancamentos, ids, categoria) };
 }
 
-function sugestaoDe(lancamentos, ids, categoria) {
+function sugestaoDeCategoria(lancamentos, ids, categoria) {
   if (categoria === CATEGORIA_SEM_CLASSIFICACAO) {
     return null;
   }
@@ -210,7 +225,7 @@ function sugestaoDe(lancamentos, ids, categoria) {
   if (chaves.length !== 1) {
     return null;
   }
-  return { id: ids[0], categoria, chave: chaves[0] };
+  return { tipo: TIPOS_SUGESTAO.CATEGORIA, id: ids[0], categoria, chave: chaves[0] };
 }
 
 function definirEstadoDoCofre(atual, { situacao, perfil = null, perfis, erro = '' }) {
@@ -243,13 +258,14 @@ function carregarDados(atual, dados) {
     ...(dados.regras ?? []),
     ...atual.regras.filter((regra) => regra.origem !== ORIGENS_REGRA.USUARIO)
   ];
-  const lancamentos = reclassificar(dados.lancamentos ?? [], regras);
+  const lancamentos = reclassificar((dados.lancamentos ?? []).map(migrar), regras);
   const meses = mesesDisponiveis(lancamentos, atual.competencia);
 
   return {
     ...atual,
     regras,
     categorias: dados.categorias ?? atual.categorias,
+    identidade: dados.identidade ?? atual.identidade,
     lancamentos,
     filtros: { ...atual.filtros, mes: meses[meses.length - 1] ?? '' }
   };
@@ -268,13 +284,15 @@ function restaurarBackup(atual, conteudo) {
   }
 
   const regras = [...conteudo.regras, ...atual.regras.filter((regra) => regra.origem !== ORIGENS_REGRA.USUARIO)];
-  const meses = mesesDisponiveis(conteudo.lancamentos, atual.competencia);
+  const lancamentos = conteudo.lancamentos.map(migrar);
+  const meses = mesesDisponiveis(lancamentos, atual.competencia);
 
   return {
     ...atual,
     regras,
     categorias: conteudo.categorias ?? atual.categorias,
-    lancamentos: reclassificar(conteudo.lancamentos, regras),
+    identidade: conteudo.identidade ?? atual.identidade,
+    lancamentos: reclassificar(lancamentos, regras),
     filtros: { ...atual.filtros, mes: meses[meses.length - 1] ?? '' },
     selecao: [],
     sugestao: null,
@@ -293,6 +311,10 @@ function alternarSelecao(atual, id) {
   const marcado = atual.selecao.includes(id);
   const selecao = marcado ? atual.selecao.filter((item) => item !== id) : [...atual.selecao, id];
   return { ...atual, selecao };
+}
+
+function definirSelecao(atual, ids) {
+  return { ...atual, selecao: [...new Set(ids)] };
 }
 
 function limparSelecao(atual) {
@@ -332,21 +354,52 @@ function definirAba(atual, aba) {
   return { ...atual, aba };
 }
 
-function alternarNaoGasto(atual, id) {
-  const posicao = atual.lancamentos.findIndex((lancamento) => lancamento.id === id);
-  if (posicao === -1) {
+function definirForaDoTotal(atual, { ids, fora }) {
+  const alvos = new Set(ids);
+  if (alvos.size === 0) {
     return atual;
   }
 
-  const alvo = atual.lancamentos[posicao];
-  const lancamentos = [...atual.lancamentos];
-  lancamentos[posicao] = {
-    ...alvo,
-    naoGasto: alvo.naoGasto === false ? MOTIVOS_NAO_GASTO.MANUAL : false,
-    revisadoManual: true
-  };
+  const lancamentos = atual.lancamentos.map((lancamento) => {
+    if (!alvos.has(lancamento.id)) {
+      return lancamento;
+    }
+    return { ...lancamento, foraDoTotalManual: fora };
+  });
 
-  return { ...atual, lancamentos };
+  return { ...atual, lancamentos, sugestao: sugestaoDeIdentidade(atual, lancamentos, ids, fora) };
+}
+
+function definirIdentidade(atual, identidade) {
+  if (!identidade) {
+    return atual;
+  }
+  return { ...atual, identidade, lancamentos: reavaliar(atual.lancamentos, identidade) };
+}
+
+function sugestaoDeIdentidade(atual, lancamentos, ids, fora) {
+  if (fora !== true || ids.length !== 1) {
+    return null;
+  }
+
+  const alvo = lancamentos.find((lancamento) => lancamento.id === ids[0]);
+  if (!alvo || combina(alvo.descricaoOriginal, atual.identidade)) {
+    return null;
+  }
+
+  const { nome } = candidatosDe(alvo.descricaoOriginal);
+  if (!nome || !recebeuDe(lancamentos, nome)) {
+    return null;
+  }
+
+  return { tipo: TIPOS_SUGESTAO.IDENTIDADE, id: alvo.id, termo: nome, campo: TIPOS_IDENTIDADE.NOMES };
+}
+
+function recebeuDe(lancamentos, nome) {
+  const comoVoce = acrescentarTermo(identidadeVazia(), TIPOS_IDENTIDADE.NOMES, nome);
+  return lancamentos.some(
+    (lancamento) => lancamento.valor > 0 && combina(lancamento.descricaoOriginal, comoVoce)
+  );
 }
 
 function definirCompetencia(atual, competencia) {

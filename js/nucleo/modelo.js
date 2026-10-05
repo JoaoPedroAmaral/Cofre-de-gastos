@@ -1,4 +1,4 @@
-import { CATEGORIA_SEM_CLASSIFICACAO, COMPETENCIA, METODOS } from './constantes.js';
+import { CATEGORIA_SEM_CLASSIFICACAO, COMPETENCIA, METODOS, MOTIVOS_NAO_GASTO } from './constantes.js';
 import { paraCentavos } from './dinheiro.js';
 import { paraIso } from './datas.js';
 
@@ -34,11 +34,25 @@ export function criarLancamento(bruto) {
     tags: [],
     parcela: null,
     naoGasto: false,
+    foraDoTotalManual: null,
     origem: {
       arquivo: texto(bruto.arquivo),
       linha: bruto.linha ?? null
     },
     revisadoManual: false
+  };
+}
+
+export function migrar(lancamento) {
+  if (lancamento.foraDoTotalManual !== undefined) {
+    return lancamento;
+  }
+
+  const marcadoPorVoce = lancamento.naoGasto === MOTIVOS_NAO_GASTO.MANUAL;
+  return {
+    ...lancamento,
+    naoGasto: marcadoPorVoce ? false : lancamento.naoGasto,
+    foraDoTotalManual: marcadoPorVoce ? true : null
   };
 }
 

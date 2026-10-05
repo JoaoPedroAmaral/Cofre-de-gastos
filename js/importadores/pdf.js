@@ -3,6 +3,7 @@ import { agruparEmLinhas } from './faturas/layout.js';
 import { emissorDe } from './faturas/emissores.js';
 import { lerFatura } from './faturas/lancamentos.js';
 import { descobrirReferencia } from './faturas/periodo.js';
+import { BANCO as BANCO_PICPAY, CONTA as CONTA_PICPAY, ehExtratoPicpay, lerExtratoPicpay } from './extratos/picpay.js';
 
 export const MENSAGENS_PDF = Object.freeze({
   SEM_TEXTO:
@@ -14,9 +15,10 @@ export const MENSAGENS_PDF = Object.freeze({
 });
 
 const CONTA_FATURA = 'Cartão de crédito';
+const TEXTO_VAZIO = '';
 const PRIMEIRA_PAGINA = 1;
 
-export async function extrairLinhas(bytes) {
+export async function extrairPaginas(bytes) {
   const pdfjs = await carregarPdfJs();
   const documento = await pdfjs.getDocument({
     data: new Uint8Array(bytes),
@@ -27,23 +29,33 @@ export async function extrairLinhas(bytes) {
   }).promise;
 
   try {
-    const linhas = [];
+    const paginas = [];
     for (let numero = PRIMEIRA_PAGINA; numero <= documento.numPages; numero += 1) {
       const pagina = await documento.getPage(numero);
       const conteudo = await pagina.getTextContent();
-      linhas.push(...agruparEmLinhas(conteudo.items));
+      paginas.push({ numero, itens: conteudo.items });
       pagina.cleanup();
     }
-    return linhas;
+    return paginas;
   } finally {
     await documento.destroy();
   }
 }
 
+export async function extrairLinhas(bytes) {
+  const paginas = await extrairPaginas(bytes);
+  return paginas.flatMap((pagina) => agruparEmLinhas(pagina.itens));
+}
+
 export async function analisar(bytes, arquivo) {
-  const linhas = await extrairLinhas(bytes);
+  const paginas = await extrairPaginas(bytes);
+  const linhas = paginas.flatMap((pagina) => agruparEmLinhas(pagina.itens));
   if (linhas.length === 0) {
     throw new Error(MENSAGENS_PDF.SEM_TEXTO);
+  }
+
+  if (ehExtratoPicpay(linhas)) {
+    return lerExtrato(paginas, arquivo);
   }
 
   const referencia = descobrirReferencia(linhas);
@@ -60,4 +72,14 @@ export async function analisar(bytes, arquivo) {
   });
 
   return { brutos: lancamentos, pendencias, banco, referencia };
+}
+
+function lerExtrato(paginas, arquivo) {
+  const { lancamentos, pendencias } = lerExtratoPicpay(paginas, {
+    banco: BANCO_PICPAY,
+    conta: CONTA_PICPAY,
+    arquivo
+  });
+
+  return { brutos: lancamentos, pendencias, banco: BANCO_PICPAY, referencia: TEXTO_VAZIO };
 }

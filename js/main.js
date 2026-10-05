@@ -7,6 +7,7 @@ import { telaPlanilha } from './ui/planilha.js';
 import { telaRegras } from './ui/regras.js';
 import { telaPainel } from './ui/painel.js';
 import { telaExportar } from './ui/exportar.js';
+import { telaAjustes } from './ui/ajustes.js';
 import { telaPrivacidade } from './ui/privacidade.js';
 import { telaCofre, telaMensagem } from './ui/cadeado.js';
 import { listarPerfis } from './armazenamento/banco.js';
@@ -39,6 +40,7 @@ async function iniciar() {
   registrarTela(TELAS.REGRAS, telaRegras);
   registrarTela(TELAS.PAINEL, telaPainel);
   registrarTela(TELAS.EXPORTAR, telaExportar);
+  registrarTela(TELAS.AJUSTES, telaAjustes);
   registrarTela(TELAS.PRIVACIDADE, telaPrivacidade);
 
   aplicarTemaSalvo();

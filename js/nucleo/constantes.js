@@ -4,6 +4,7 @@ export const TELAS = Object.freeze({
   IMPORTAR: 'importar',
   REGRAS: 'regras',
   EXPORTAR: 'exportar',
+  AJUSTES: 'ajustes',
   PRIVACIDADE: 'privacidade'
 });
 
@@ -13,6 +14,7 @@ export const ROTULOS_TELA = Object.freeze({
   [TELAS.IMPORTAR]: 'Importar',
   [TELAS.REGRAS]: 'Regras',
   [TELAS.EXPORTAR]: 'Exportar',
+  [TELAS.AJUSTES]: 'Ajustes',
   [TELAS.PRIVACIDADE]: 'Privacidade'
 });
 
@@ -21,7 +23,8 @@ export const ORDEM_TELAS = Object.freeze([
   TELAS.PLANILHA,
   TELAS.IMPORTAR,
   TELAS.REGRAS,
-  TELAS.EXPORTAR
+  TELAS.EXPORTAR,
+  TELAS.AJUSTES
 ]);
 
 export const TELA_INICIAL = TELAS.IMPORTAR;
@@ -57,10 +60,12 @@ export const ACOES = Object.freeze({
   REGISTRAR_IMPORTACAO: 'registrarImportacao',
   DEFINIR_ORDENACAO: 'definirOrdenacao',
   DEFINIR_ABA: 'definirAba',
-  ALTERNAR_NAO_GASTO: 'alternarNaoGasto',
+  DEFINIR_FORA_DO_TOTAL: 'definirForaDoTotal',
+  DEFINIR_IDENTIDADE: 'definirIdentidade',
   DEFINIR_CATEGORIA: 'definirCategoria',
   ALTERNAR_SELECAO: 'alternarSelecao',
   LIMPAR_SELECAO: 'limparSelecao',
+  DEFINIR_SELECAO: 'definirSelecao',
   DEFINIR_ABA_REGRAS: 'definirAbaRegras',
   DESCARTAR_SUGESTAO: 'descartarSugestao',
   CRIAR_REGRA: 'criarRegra',
@@ -143,10 +148,22 @@ export const COLUNAS_PLANILHA = Object.freeze([
 ]);
 
 export const MOTIVOS_NAO_GASTO = Object.freeze({
+  CONTA_PROPRIA: 'conta_propria',
   TRANSFERENCIA: 'transferencia',
   PAGAMENTO_FATURA: 'pagamento_fatura',
   APLICACAO: 'aplicacao',
   MANUAL: 'manual'
+});
+
+export const TIPOS_IDENTIDADE = Object.freeze({
+  NOMES: 'nomes',
+  DOCUMENTOS: 'documentos',
+  CONTAS: 'contas'
+});
+
+export const TIPOS_SUGESTAO = Object.freeze({
+  CATEGORIA: 'categoria',
+  IDENTIDADE: 'identidade'
 });
 
 export const COMPETENCIA = Object.freeze({

@@ -24,9 +24,11 @@ const TEXTOS = Object.freeze({
   VAZIO_TITULO: 'Nada para mostrar ainda',
   VAZIO_TEXTO: 'Importe um extrato e o painel aparece com seus gastos do mês.',
   VAZIO_ACAO: 'Ir para importação',
-  GASTOU: 'Você gastou em',
+  SALDO_POSITIVO: 'Você fechou no azul em',
+  SALDO_NEGATIVO: 'Você fechou no vermelho em',
   ENTROU: 'Entrou',
-  SOBROU: 'Sobrou',
+  SAIU: 'Saiu',
+  GASTOU: 'Você gastou em',
   TICKET: 'Ticket médio',
   CATEGORIAS: 'Categorias',
   VER_TODAS: 'Ver todas',
@@ -84,12 +86,20 @@ function vazio() {
 function destaque(estado, resumo) {
   const periodo = estado.filtros.mes ? formatarMesLongo(estado.filtros.mes).toLowerCase() : 'todo o período';
 
+  const sobrou = resumo.saldo >= 0;
+
   return criarElemento('div', { class: 'destaque' }, [
-    criarElemento('span', { class: 'fraco', texto: `${TEXTOS.GASTOU} ${periodo}` }),
-    criarElemento('span', { class: 'destaque__valor display', texto: formatarMoeda(-resumo.gasto) }),
+    criarElemento('span', {
+      class: 'fraco',
+      texto: `${sobrou ? TEXTOS.SALDO_POSITIVO : TEXTOS.SALDO_NEGATIVO} ${periodo}`
+    }),
+    criarElemento('span', {
+      class: sobrou ? 'destaque__valor display destaque__valor--entrada' : 'destaque__valor display',
+      texto: formatarMoeda(resumo.saldo)
+    }),
     criarElemento('div', { class: 'destaque__secundarios' }, [
-      metrica(TEXTOS.ENTROU, formatarMoeda(resumo.entradas)),
-      metrica(TEXTOS.SOBROU, formatarMoeda(resumo.saldo), resumo.saldo >= 0),
+      metrica(TEXTOS.ENTROU, formatarMoeda(resumo.entradas), true),
+      metrica(TEXTOS.SAIU, formatarMoeda(-resumo.gasto)),
       metrica(TEXTOS.TICKET, formatarMoeda(-resumo.ticketMedio))
     ]),
     resumo.semCategoria > 0 ? avisoSemCategoria(resumo) : null

@@ -1,6 +1,6 @@
 import { ORIGENS_REGRA, ROTULOS_METODO } from '../nucleo/constantes.js';
 import { porCategoria, porMes } from '../nucleo/agregar.js';
-import { ROTULOS_NAO_GASTO } from '../nucleo/naoGasto.js';
+import { estaForaDoTotal, rotuloForaDoTotal } from '../nucleo/naoGasto.js';
 import { ROTULOS_OPERADOR } from '../nucleo/regras.js';
 import { deCentavos } from '../nucleo/dinheiro.js';
 import { dataDeCompetencia } from '../nucleo/modelo.js';
@@ -58,8 +58,8 @@ function abaTransacoes(lancamentos, competencia) {
     ROTULOS_METODO[lancamento.metodo] ?? lancamento.metodo,
     lancamento.parcela ? `${lancamento.parcela.atual}/${lancamento.parcela.total}` : TEXTO_VAZIO,
     deCentavos(lancamento.valor),
-    lancamento.naoGasto === false ? SIM : NAO,
-    lancamento.naoGasto === false ? TEXTO_VAZIO : ROTULOS_NAO_GASTO[lancamento.naoGasto] ?? lancamento.naoGasto
+    estaForaDoTotal(lancamento) ? NAO : SIM,
+    rotuloForaDoTotal(lancamento)
   ]);
 
   return [cabecalho, ...linhas];

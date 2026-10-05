@@ -4,6 +4,17 @@ const ESPACOS_REPETIDOS = /\s+/g;
 const ESPACO = ' ';
 const TEXTO_VAZIO = '';
 
+export function normalizarItens(itens) {
+  return itens
+    .filter((item) => String(item.str).trim() !== TEXTO_VAZIO)
+    .map((item) => ({
+      texto: String(item.str).trim(),
+      esquerda: esquerdaDe(item),
+      direita: esquerdaDe(item) + larguraDe(item),
+      base: baseDe(item)
+    }));
+}
+
 export function agruparEmLinhas(itens) {
   const comTexto = itens.filter((item) => String(item.str).trim() !== TEXTO_VAZIO);
 
