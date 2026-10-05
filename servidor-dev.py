@@ -5,6 +5,7 @@ import sys
 
 PORTA_PADRAO = 8000
 ENDERECO = '127.0.0.1'
+REQUISICOES_EM_FILA = 128
 
 TIPOS_MIME = {
     '.js': 'text/javascript',
@@ -43,6 +44,7 @@ CABECALHOS = {
 
 class Servidor(http.server.SimpleHTTPRequestHandler):
     extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map, **TIPOS_MIME}
+    protocol_version = 'HTTP/1.1'
 
     def end_headers(self):
         self.send_header('Content-Security-Policy', self.politica())
@@ -56,11 +58,16 @@ class Servidor(http.server.SimpleHTTPRequestHandler):
         return POLITICA_SEGURANCA
 
 
+class ServidorParalelo(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+    request_queue_size = REQUISICOES_EM_FILA
+
+
 def iniciar():
     porta = int(sys.argv[1]) if len(sys.argv) > 1 else PORTA_PADRAO
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer((ENDERECO, porta), Servidor) as servidor:
+    with ServidorParalelo((ENDERECO, porta), Servidor) as servidor:
         print(f'Gastos Controller em http://{ENDERECO}:{porta}')
         print(f'Testes em http://{ENDERECO}:{porta}/testes/')
         servidor.serve_forever()
