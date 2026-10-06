@@ -11,6 +11,9 @@ import {
 import { despachar } from '../estado/store.js';
 import { estaForaDoTotal, rotuloForaDoTotal } from '../nucleo/naoGasto.js';
 import { criarElemento, estadoVazio } from './componentes.js';
+import { pedirTexto } from './dialogos.js';
+import { existe } from '../nucleo/catalogo.js';
+import { ordenarLancamentos } from '../nucleo/ordenar.js';
 import { faixaDeSugestao } from './sugestoes.js';
 import { filtrosDaPlanilha, navegacaoDeMes } from './filtros.js';
 import { aplicar } from '../nucleo/filtrar.js';
@@ -21,6 +24,7 @@ const TEXTO_VAZIO = '';
 const INDICADORES = Object.freeze({ ASCENDENTE: '▲', DESCENDENTE: '▼' });
 const SEPARADOR_DETALHE = ' · ';
 const COLUNA_DE_SELECAO = 1;
+const OPCAO_NOVA_CATEGORIA = 'nova-categoria';
 const COLUNAS_DA_TABELA = COLUNAS_PLANILHA.length + COLUNA_DE_SELECAO;
 
 const TEXTOS = Object.freeze({
@@ -31,6 +35,13 @@ const TEXTOS = Object.freeze({
   SEM_RESULTADO: 'Nada nesta aba',
   SEM_RESULTADO_TEXTO: 'Troque de aba para ver os outros lançamentos.',
   CATEGORIZAR: 'Categorizar',
+  NOVA_CATEGORIA: 'Nova categoria…',
+  NOVA_CATEGORIA_TITULO: 'Nova categoria',
+  NOME_DA_CATEGORIA: 'Nome da categoria',
+  CRIAR_CATEGORIA: 'Criar e aplicar',
+  EXEMPLO_CATEGORIA: 'Pets',
+  NOME_VAZIO: 'Escreva o nome da categoria.',
+  NOME_REPETIDO: 'Já existe uma categoria com esse nome.',
   INCLUIR: 'Incluir no total',
   TIRAR: 'Tirar do total',
   AUTOMATICO: 'Voltar ao automático',
@@ -49,7 +60,7 @@ export function telaPlanilha(estado) {
   }
 
   const noPeriodo = aplicar(estado.lancamentos, estado.filtros, estado.competencia);
-  const visiveis = ordenar(filtrarPorAba(noPeriodo, estado.aba), estado.ordenacao);
+  const visiveis = ordenarLancamentos(filtrarPorAba(noPeriodo, estado.aba), estado.ordenacao);
 
   return criarElemento('div', { class: 'tela' }, [
     navegacaoDeMes(estado, mesesDisponiveis(estado.lancamentos, estado.competencia)),
@@ -81,7 +92,7 @@ function vazioInicial() {
 function resumo(lancamentos) {
   const bancos = new Set(lancamentos.map((lancamento) => lancamento.banco));
   const plural = bancos.size === 1 ? 'banco' : 'bancos';
-  return `${lancamentos.length} lançamentos de ${bancos.size} ${plural}. O que ainda não tem categoria fica sempre em cima.`;
+  return `${lancamentos.length} lançamentos de ${bancos.size} ${plural}. A aba "Sem categoria" reúne o que falta categorizar.`;
 }
 
 function barraDeAbas(estado, noPeriodo) {
@@ -264,18 +275,55 @@ function seletorCategoria(lancamento, estado) {
     {
       class: semCategoria ? 'etiqueta etiqueta--vazia' : 'etiqueta',
       'aria-label': `Categoria de ${lancamento.descricaoOriginal}`,
-      onChange: (evento) => despachar(ACOES.DEFINIR_CATEGORIA, { ids: [lancamento.id], categoria: evento.target.value })
+      onChange: (evento) => escolher(evento.target, lancamento, estado)
     },
-    estado.categorias.map((categoria) =>
-      criarElemento('option', {
-        value: categoria,
-        texto: categoria === CATEGORIA_SEM_CLASSIFICACAO ? TEXTOS.CATEGORIZAR : categoria
-      })
-    )
+    [
+      ...estado.categorias.map((categoria) =>
+        criarElemento('option', {
+          value: categoria,
+          texto: categoria === CATEGORIA_SEM_CLASSIFICACAO ? TEXTOS.CATEGORIZAR : categoria
+        })
+      ),
+      criarElemento('option', { value: OPCAO_NOVA_CATEGORIA, texto: TEXTOS.NOVA_CATEGORIA })
+    ]
   );
 
   seletor.value = lancamento.categoria;
   return seletor;
+}
+
+function escolher(seletor, lancamento, estado) {
+  if (seletor.value !== OPCAO_NOVA_CATEGORIA) {
+    despachar(ACOES.DEFINIR_CATEGORIA, { ids: [lancamento.id], categoria: seletor.value });
+    return;
+  }
+
+  seletor.value = lancamento.categoria;
+  pedirTexto({
+    titulo: TEXTOS.NOVA_CATEGORIA_TITULO,
+    rotulo: TEXTOS.NOME_DA_CATEGORIA,
+    exemplo: TEXTOS.EXEMPLO_CATEGORIA,
+    acao: TEXTOS.CRIAR_CATEGORIA,
+    aoConfirmar: (nome) => {
+      const recusa = recusarNome(nome, estado);
+      if (recusa) {
+        return recusa;
+      }
+      despachar(ACOES.CRIAR_CATEGORIA, nome);
+      despachar(ACOES.DEFINIR_CATEGORIA, { ids: [lancamento.id], categoria: nome.trim() });
+      return TEXTO_VAZIO;
+    }
+  });
+}
+
+function recusarNome(nome, estado) {
+  if (nome.trim() === TEXTO_VAZIO) {
+    return TEXTOS.NOME_VAZIO;
+  }
+  if (existe(estado.categorias, nome)) {
+    return TEXTOS.NOME_REPETIDO;
+  }
+  return TEXTO_VAZIO;
 }
 
 function barraDeSelecao(estado) {
@@ -342,28 +390,3 @@ function indicador(campo, ordenacao) {
   return ordenacao.ascendente ? INDICADORES.ASCENDENTE : INDICADORES.DESCENDENTE;
 }
 
-function ordenar(lancamentos, ordenacao) {
-  const direcao = ordenacao.ascendente ? 1 : -1;
-
-  return [...lancamentos].sort((a, b) => {
-    const prioridade = prioridadeDe(a) - prioridadeDe(b);
-    if (prioridade !== 0) {
-      return prioridade;
-    }
-
-    const valorA = a[ordenacao.campo];
-    const valorB = b[ordenacao.campo];
-
-    if (typeof valorA === 'number' && typeof valorB === 'number') {
-      return (valorA - valorB) * direcao;
-    }
-    return String(valorA).localeCompare(String(valorB)) * direcao;
-  });
-}
-
-function prioridadeDe(lancamento) {
-  if (!estaForaDoTotal(lancamento) && lancamento.categoria === CATEGORIA_SEM_CLASSIFICACAO) {
-    return 0;
-  }
-  return 1;
-}

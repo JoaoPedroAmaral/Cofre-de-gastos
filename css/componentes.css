@@ -1845,3 +1845,33 @@ select.etiqueta.etiqueta--vazia {
   color: var(--cor-texto-suave);
   font-size: var(--texto-sm);
 }
+
+.catalogo {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--espaco-2);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  overflow: hidden;
+}
+
+.catalogo__linha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-4);
+  border-bottom: 1px solid var(--cor-linha);
+}
+
+.catalogo__linha:last-child {
+  border-bottom: none;
+}
+
+.catalogo__linha:hover {
+  background: var(--cor-superficie-alta);
+}
+
+.catalogo__nome {
+  font-size: var(--texto-md);
+}

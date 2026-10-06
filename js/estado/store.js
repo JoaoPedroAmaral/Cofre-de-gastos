@@ -25,6 +25,7 @@ import {
   combina,
   identidadeVazia
 } from '../nucleo/identidadePessoal.js';
+import * as catalogo from '../nucleo/catalogo.js';
 
 const filtrosIniciais = Object.freeze({
   mes: '',
@@ -110,6 +111,12 @@ function reduzir(atual, acao, dados) {
       return definirIdentidade(atual, dados);
     case ACOES.DEFINIR_CATEGORIA:
       return definirCategoria(atual, dados);
+    case ACOES.CRIAR_CATEGORIA:
+      return criarCategoria(atual, dados);
+    case ACOES.RENOMEAR_CATEGORIA:
+      return renomearCategoria(atual, dados);
+    case ACOES.REMOVER_CATEGORIA:
+      return removerCategoria(atual, dados);
     case ACOES.ALTERNAR_SELECAO:
       return alternarSelecao(atual, dados);
     case ACOES.LIMPAR_SELECAO:
@@ -215,6 +222,51 @@ function definirCategoria(atual, { ids, categoria }) {
   });
 
   return { ...atual, lancamentos, sugestao: sugestaoDeCategoria(lancamentos, ids, categoria) };
+}
+
+function criarCategoria(atual, nome) {
+  const categorias = catalogo.acrescentar(atual.categorias, nome);
+  return categorias === atual.categorias ? atual : { ...atual, categorias };
+}
+
+function renomearCategoria(atual, { de, para }) {
+  const categorias = catalogo.renomear(atual.categorias, de, para);
+  if (categorias === atual.categorias) {
+    return atual;
+  }
+
+  const nome = categorias.find((item) => catalogo.mesmoNome(item, para));
+  const lancamentos = atual.lancamentos.map((lancamento) =>
+    catalogo.mesmoNome(lancamento.categoria, de) ? { ...lancamento, categoria: nome } : lancamento
+  );
+  const regras = atual.regras.map((regra) =>
+    catalogo.mesmoNome(regra.categoria, de) ? { ...regra, categoria: nome } : regra
+  );
+
+  return { ...atual, categorias, regras, lancamentos: reclassificar(lancamentos, regras) };
+}
+
+function removerCategoria(atual, { nome, destino = CATEGORIA_SEM_CLASSIFICACAO }) {
+  const categorias = catalogo.remover(atual.categorias, nome);
+  if (categorias === atual.categorias) {
+    return atual;
+  }
+
+  const paraSemCategoria = catalogo.mesmoNome(destino, CATEGORIA_SEM_CLASSIFICACAO);
+  const regras = paraSemCategoria
+    ? atual.regras.filter((regra) => !catalogo.mesmoNome(regra.categoria, nome))
+    : atual.regras.map((regra) =>
+        catalogo.mesmoNome(regra.categoria, nome) ? { ...regra, categoria: destino } : regra
+      );
+
+  const lancamentos = atual.lancamentos.map((lancamento) => {
+    if (!catalogo.mesmoNome(lancamento.categoria, nome)) {
+      return lancamento;
+    }
+    return { ...lancamento, categoria: destino, revisadoManual: !paraSemCategoria, regra: null };
+  });
+
+  return { ...atual, categorias, regras, lancamentos: reclassificar(lancamentos, regras) };
 }
 
 function sugestaoDeCategoria(lancamentos, ids, categoria) {

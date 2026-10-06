@@ -12,6 +12,7 @@ import './casos/foraDoTotal.js';
 import './casos/normalizacao.js';
 import './casos/integridade.js';
 import './casos/classificacao.js';
+import './casos/catalogo.js';
 import './casos/painel.js';
 import './casos/exportacao.js';
 import './casos/cofre.js';

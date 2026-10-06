@@ -1,4 +1,4 @@
-import { ACOES, CATEGORIAS_PADRAO } from '../nucleo/constantes.js';
+import { ACOES } from '../nucleo/constantes.js';
 import { despachar } from '../estado/store.js';
 import { bancosDe, tagsDe } from '../nucleo/filtrar.js';
 import { mesAnterior, mesSeguinte } from '../nucleo/agregar.js';
@@ -111,7 +111,7 @@ function seletor(rotuloVazio, opcoes, escolhido, aoMudar) {
 
 function categoriasEmUso(estado) {
   const usadas = new Set(estado.lancamentos.map((lancamento) => lancamento.categoria));
-  return CATEGORIAS_PADRAO.filter((categoria) => usadas.has(categoria));
+  return estado.categorias.filter((categoria) => usadas.has(categoria));
 }
 
 function temFiltro(filtros) {
