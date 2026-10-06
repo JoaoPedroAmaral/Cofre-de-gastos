@@ -17,5 +17,6 @@ import './casos/tags.js';
 import './casos/painel.js';
 import './casos/exportacao.js';
 import './casos/cofre.js';
+import './casos/privacidade.js';
 
 executar(document.getElementById('relatorio'));

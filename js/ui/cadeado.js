@@ -1,4 +1,5 @@
 import { ACOES, ESTADOS_COFRE, LIMITE_DE_PERFIS, NIVEIS_AVISO } from '../nucleo/constantes.js';
+import { ENDERECO_DO_TERMO } from '../privacidade/termo.js';
 import { despachar } from '../estado/store.js';
 import {
   abrirComCodigo,
@@ -66,6 +67,7 @@ const TEXTOS = Object.freeze({
   RESTAURANDO_AJUDA:
     'O backup foi aberto. Crie a senha que vai proteger este cofre no navegador atual: ela pode ser diferente da senha do arquivo.',
   RODAPE: 'Seus dados ficam cifrados neste navegador. Sem a senha ou o código, ninguém abre, nem nós.',
+  LER_TERMO: 'Ler o termo de privacidade',
   COPIADO: 'Código copiado.',
   PASSOS: Object.freeze(['Senha', 'Código', 'Pronto'])
 });
@@ -435,7 +437,10 @@ function moldura(titulo, ajuda, conteudo) {
       ]),
       ...conteudo
     ]),
-    criarElemento('p', { class: 'cofre__rodape fraco', texto: TEXTOS.RODAPE })
+    criarElemento('p', { class: 'cofre__rodape fraco' }, [
+      criarElemento('span', { texto: `${TEXTOS.RODAPE} ` }),
+      criarElemento('a', { href: ENDERECO_DO_TERMO, texto: TEXTOS.LER_TERMO })
+    ])
   ]);
 }
 

@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const RAIZ = path.resolve(import.meta.dirname, '..');
 const PASTAS = ['css', 'js', 'vendor/fontes', 'icones'];
-const AVULSOS = ['/', '/index.html', '/manifest.webmanifest', '/vendor/fontes.css'];
+const AVULSOS = ['/', '/index.html', '/privacidade.html', '/manifest.webmanifest', '/vendor/fontes.css'];
 const PADRAO_LISTA = /const ESSENCIAIS = \[([\s\S]*?)\];/;
 const PADRAO_CAMINHO = /'([^']+)'/g;
 

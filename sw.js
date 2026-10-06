@@ -1,4 +1,4 @@
-const VERSAO = 'v8';
+const VERSAO = 'v9';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const METODO_LIDO = 'GET';
@@ -7,6 +7,7 @@ const PASTAS_IMUTAVEIS = ['/vendor/', '/icones/'];
 const ESSENCIAIS = [
   '/',
   '/index.html',
+  '/privacidade.html',
   '/manifest.webmanifest',
   '/css/base.css',
   '/css/componentes.css',
@@ -50,6 +51,9 @@ const ESSENCIAIS = [
   '/js/importadores/faturas/lancamentos.js',
   '/js/importadores/faturas/layout.js',
   '/js/importadores/faturas/periodo.js',
+  '/js/privacidade/conteudo.js',
+  '/js/privacidade/pagina.js',
+  '/js/privacidade/termo.js',
   '/js/nucleo/agregar.js',
   '/js/nucleo/catalogo.js',
   '/js/nucleo/classificar.js',
