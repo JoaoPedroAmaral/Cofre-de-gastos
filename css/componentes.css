@@ -1875,3 +1875,52 @@ select.etiqueta.etiqueta--vazia {
 .catalogo__nome {
   font-size: var(--texto-md);
 }
+
+.tabela__tags {
+  width: 220px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1);
+}
+
+.tag--regra {
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+.tag__remover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: var(--espaco-1);
+  padding: 0;
+  border: none;
+  border-radius: var(--raio-sm);
+  background: transparent;
+  color: inherit;
+  font-size: var(--texto-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tag__remover:hover {
+  background: var(--cor-superficie-alt);
+  color: var(--cor-texto);
+}
+
+.tag--acao {
+  border-style: dashed;
+  color: var(--cor-texto-fraco);
+  cursor: pointer;
+}
+
+.tag--acao:hover {
+  border-color: var(--cor-marca-borda);
+  color: var(--cor-marca);
+}

@@ -7,6 +7,7 @@ const ACENTOS = /[\u0300-\u036f]/g;
 const NAO_ALFANUMERICO = /[^a-z0-9]/g;
 const TEXTO_VAZIO = '';
 const ESPACO = ' ';
+const SEPARADOR_DE_TAGS = ',';
 const PRIMEIRA_LINHA_PLANILHA = 2;
 const COLUNA_AUSENTE = -1;
 
@@ -24,6 +25,7 @@ export function aplicarMapeamento(tabela, mapeamento, contexto = {}) {
       descricaoOriginal: celula(linha, colunas.descricao),
       identificadorBanco: celula(linha, colunas.identificador),
       categoria: celula(linha, colunas.categoria),
+      tags: tagsDa(linha, colunas),
       foraDoTotalManual: decisaoManualDa(linha, colunas),
       banco: celula(linha, colunas.banco) || mapeamento.banco || contexto.banco || TEXTO_VAZIO,
       conta: mapeamento.conta || TEXTO_VAZIO,
@@ -47,6 +49,14 @@ export function indicePorNome(cabecalho, nome) {
     return COLUNA_AUSENTE;
   }
   return cabecalho.findIndex((coluna) => normalizarNome(coluna) === procurado);
+}
+
+function tagsDa(linha, colunas) {
+  const texto = celula(linha, colunas.tags);
+  if (texto === TEXTO_VAZIO) {
+    return [];
+  }
+  return texto.split(SEPARADOR_DE_TAGS).map((tag) => tag.trim()).filter(Boolean);
 }
 
 function decisaoManualDa(linha, colunas) {

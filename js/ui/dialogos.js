@@ -2,17 +2,25 @@ import { abrirModal, criarElemento } from './componentes.js';
 
 const TEXTO_VAZIO = '';
 const TECLA_ENTRA = 'Enter';
+const IDENTIFICADOR_DAS_SUGESTOES = 'sugestoes-do-dialogo';
 
 const TEXTOS = Object.freeze({
   CANCELAR: 'Cancelar'
 });
 
-export function pedirTexto({ titulo, rotulo, valor = TEXTO_VAZIO, exemplo, acao, aoConfirmar }) {
+export function pedirTexto({ titulo, rotulo, valor = TEXTO_VAZIO, exemplo, sugestoes = [], acao, aoConfirmar }) {
+  const lista = criarElemento(
+    'datalist',
+    { id: IDENTIFICADOR_DAS_SUGESTOES },
+    sugestoes.map((sugestao) => criarElemento('option', { value: sugestao }))
+  );
+
   const entrada = criarElemento('input', {
     class: 'campo__entrada',
     type: 'text',
     value: valor,
     placeholder: exemplo,
+    list: sugestoes.length > 0 ? IDENTIFICADOR_DAS_SUGESTOES : null,
     'aria-label': rotulo
   });
 
@@ -21,6 +29,7 @@ export function pedirTexto({ titulo, rotulo, valor = TEXTO_VAZIO, exemplo, acao,
   const corpo = criarElemento('div', { class: 'campo' }, [
     criarElemento('span', { class: 'campo__rotulo', texto: rotulo }),
     entrada,
+    lista,
     aviso
   ]);
 

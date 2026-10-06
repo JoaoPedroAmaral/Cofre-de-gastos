@@ -4,6 +4,7 @@ import { estaForaDoTotal, rotuloForaDoTotal } from '../nucleo/naoGasto.js';
 import { ROTULOS_OPERADOR } from '../nucleo/regras.js';
 import { deCentavos } from '../nucleo/dinheiro.js';
 import { dataDeCompetencia } from '../nucleo/modelo.js';
+import { tagsDe } from '../nucleo/tags.js';
 
 const TEXTO_VAZIO = '';
 const SEPARADOR_TAGS = ', ';
@@ -38,7 +39,7 @@ function abaTransacoes(lancamentos, competencia) {
     lancamento.descricaoOriginal,
     lancamento.comerciante,
     lancamento.categoria,
-    lancamento.tags.join(SEPARADOR_TAGS),
+    tagsDe(lancamento).join(SEPARADOR_TAGS),
     lancamento.banco,
     ROTULOS_METODO[lancamento.metodo] ?? lancamento.metodo,
     lancamento.parcela ? `${lancamento.parcela.atual}/${lancamento.parcela.total}` : TEXTO_VAZIO,

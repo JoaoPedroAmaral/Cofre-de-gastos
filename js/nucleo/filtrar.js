@@ -1,6 +1,7 @@
 import { mesDe } from './datas.js';
 import { dataDeCompetencia } from './modelo.js';
 import { normalizarTexto } from './normalizar.js';
+import { tagsDe as tagsDoLancamento } from './tags.js';
 
 const TEXTO_VAZIO = '';
 
@@ -20,7 +21,7 @@ export function bancosDe(lancamentos) {
 }
 
 export function tagsDe(lancamentos) {
-  return [...new Set(lancamentos.flatMap((lancamento) => lancamento.tags))].sort();
+  return [...new Set(lancamentos.flatMap(tagsDoLancamento))].sort();
 }
 
 function combinaMes(lancamento, mes, competencia) {
@@ -41,7 +42,7 @@ function combinaTag(lancamento, tag) {
   if (!tag) {
     return true;
   }
-  return lancamento.tags.includes(tag);
+  return tagsDoLancamento(lancamento).includes(tag);
 }
 
 function combinaBusca(lancamento, busca) {

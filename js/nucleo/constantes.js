@@ -64,6 +64,11 @@ export const ACOES = Object.freeze({
   DEFINIR_IDENTIDADE: 'definirIdentidade',
   DEFINIR_CATEGORIA: 'definirCategoria',
   CRIAR_CATEGORIA: 'criarCategoria',
+  CRIAR_TAG: 'criarTag',
+  ACRESCENTAR_TAG: 'acrescentarTag',
+  REMOVER_TAG: 'removerTag',
+  RENOMEAR_TAG: 'renomearTag',
+  REMOVER_TAG_DO_CATALOGO: 'removerTagDoCatalogo',
   RENOMEAR_CATEGORIA: 'renomearCategoria',
   REMOVER_CATEGORIA: 'removerCategoria',
   CRIAR_CATEGORIA: 'criarCategoria',
@@ -150,6 +155,7 @@ export const COLUNAS_PLANILHA = Object.freeze([
   { campo: 'data', rotulo: 'Data', tipo: TIPOS_COLUNA.DATA },
   { campo: 'descricaoOriginal', rotulo: 'Lançamento', tipo: TIPOS_COLUNA.TEXTO },
   { campo: 'categoria', rotulo: 'Categoria', tipo: TIPOS_COLUNA.TEXTO },
+  { campo: 'tags', rotulo: 'Tags', tipo: TIPOS_COLUNA.TEXTO },
   { campo: 'valor', rotulo: 'Valor', tipo: TIPOS_COLUNA.MOEDA }
 ]);
 

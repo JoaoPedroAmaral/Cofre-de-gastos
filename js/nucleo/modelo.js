@@ -1,6 +1,7 @@
 import { CATEGORIA_SEM_CLASSIFICACAO, COMPETENCIA, METODOS, MOTIVOS_NAO_GASTO } from './constantes.js';
 import { paraCentavos } from './dinheiro.js';
 import { paraIso } from './datas.js';
+import { normalizarTag } from './tags.js';
 
 const TEXTO_VAZIO = '';
 const BANCO_DESCONHECIDO = 'Desconhecido';
@@ -33,6 +34,7 @@ export function criarLancamento(bruto) {
     metodo: bruto.metodo || METODOS.OUTROS,
     categoria: texto(bruto.categoria) || CATEGORIA_SEM_CLASSIFICACAO,
     tags: [],
+    tagsManuais: tagsDoBruto(bruto),
     parcela: null,
     naoGasto: false,
     foraDoTotalManual: bruto.foraDoTotalManual ?? null,
@@ -44,13 +46,24 @@ export function criarLancamento(bruto) {
   };
 }
 
+function decisaoAntiga(marcadoPorVoce) {
+  return marcadoPorVoce ? true : null;
+}
+
+function tagsDoBruto(bruto) {
+  if (!Array.isArray(bruto.tags)) {
+    return [];
+  }
+  return bruto.tags.map(normalizarTag).filter(Boolean);
+}
+
 function trouxeCategoria(bruto) {
   const categoria = texto(bruto.categoria);
   return categoria !== TEXTO_VAZIO && categoria !== CATEGORIA_SEM_CLASSIFICACAO;
 }
 
 export function migrar(lancamento) {
-  if (lancamento.foraDoTotalManual !== undefined) {
+  if (lancamento.foraDoTotalManual !== undefined && lancamento.tagsManuais !== undefined) {
     return lancamento;
   }
 
@@ -58,7 +71,8 @@ export function migrar(lancamento) {
   return {
     ...lancamento,
     naoGasto: marcadoPorVoce ? false : lancamento.naoGasto,
-    foraDoTotalManual: marcadoPorVoce ? true : null
+    foraDoTotalManual: lancamento.foraDoTotalManual ?? decisaoAntiga(marcadoPorVoce),
+    tagsManuais: lancamento.tagsManuais ?? []
   };
 }
 

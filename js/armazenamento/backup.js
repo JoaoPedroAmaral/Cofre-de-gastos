@@ -4,7 +4,7 @@ import { deBase64, deTexto, paraBase64, paraTexto } from '../cofre/bytes.js';
 import { derivarChave, gerarIv, gerarSalt } from '../cofre/derivacao.js';
 
 export const FORMATO_BACKUP = 'gastos-controller/backup';
-export const VERSAO_BACKUP = 4;
+export const VERSAO_BACKUP = 5;
 
 const TIPO = 'application/json';
 const PREFIXO = 'backup-gastos';
@@ -25,6 +25,7 @@ export function montarBackup(estado) {
     lancamentos: estado.lancamentos,
     regras: estado.regras.filter((regra) => regra.origem === ORIGENS_REGRA.USUARIO),
     categorias: estado.categorias,
+    tags: estado.tags,
     identidade: estado.identidade,
     mapeamentos: listarMapeamentos()
   };

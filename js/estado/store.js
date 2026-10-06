@@ -26,6 +26,9 @@ import {
   identidadeVazia
 } from '../nucleo/identidadePessoal.js';
 import * as catalogo from '../nucleo/catalogo.js';
+import * as tags from '../nucleo/tags.js';
+
+const TEXTO_VAZIO = '';
 
 const filtrosIniciais = Object.freeze({
   mes: '',
@@ -56,6 +59,7 @@ const estadoInicial = Object.freeze({
   lancamentos: [],
   regras: Object.freeze(regrasSemente()),
   categorias: CATEGORIAS_PADRAO,
+  tags: [],
   identidade: identidadeVazia()
 });
 
@@ -113,6 +117,16 @@ function reduzir(atual, acao, dados) {
       return definirCategoria(atual, dados);
     case ACOES.CRIAR_CATEGORIA:
       return criarCategoria(atual, dados);
+    case ACOES.CRIAR_TAG:
+      return criarTag(atual, dados);
+    case ACOES.ACRESCENTAR_TAG:
+      return acrescentarTag(atual, dados);
+    case ACOES.REMOVER_TAG:
+      return removerTag(atual, dados);
+    case ACOES.RENOMEAR_TAG:
+      return renomearTag(atual, dados);
+    case ACOES.REMOVER_TAG_DO_CATALOGO:
+      return removerTagDoCatalogo(atual, dados);
     case ACOES.RENOMEAR_CATEGORIA:
       return renomearCategoria(atual, dados);
     case ACOES.REMOVER_CATEGORIA:
@@ -173,9 +187,16 @@ function registrarImportacao(atual, relatorio) {
   return {
     ...atual,
     lancamentos,
+    tags: tagsQueChegaram(atual.tags, recebidos),
     filtros: { ...atual.filtros, mes: mesDaImportacao(atual, recebidos, lancamentos) },
     importacao: { arquivos: mesclarArquivos(atual.importacao.arquivos, relatorio.arquivos || []) }
   };
+}
+
+function tagsQueChegaram(catalogoAtual, recebidos) {
+  return recebidos
+    .flatMap((lancamento) => lancamento.tagsManuais ?? [])
+    .reduce((lista, tag) => tags.acrescentar(lista, tag), catalogoAtual);
 }
 
 function mesDaImportacao(atual, recebidos, lancamentos) {
@@ -222,6 +243,82 @@ function definirCategoria(atual, { ids, categoria }) {
   });
 
   return { ...atual, lancamentos, sugestao: sugestaoDeCategoria(lancamentos, ids, categoria) };
+}
+
+function criarTag(atual, tag) {
+  const catalogoNovo = tags.acrescentar(atual.tags, tag);
+  return catalogoNovo === atual.tags ? atual : { ...atual, tags: catalogoNovo };
+}
+
+function acrescentarTag(atual, { ids, tag }) {
+  const limpa = tags.normalizarTag(tag);
+  const alvos = new Set(ids);
+
+  if (limpa === TEXTO_VAZIO || alvos.size === 0) {
+    return atual;
+  }
+
+  const lancamentos = atual.lancamentos.map((lancamento) => {
+    if (!alvos.has(lancamento.id)) {
+      return lancamento;
+    }
+    return { ...lancamento, tagsManuais: tags.acrescentar(lancamento.tagsManuais ?? [], limpa) };
+  });
+
+  return { ...atual, lancamentos, tags: tags.acrescentar(atual.tags, limpa) };
+}
+
+function removerTag(atual, { ids, tag }) {
+  const limpa = tags.normalizarTag(tag);
+  const alvos = new Set(ids);
+
+  if (limpa === TEXTO_VAZIO || alvos.size === 0) {
+    return atual;
+  }
+
+  const lancamentos = atual.lancamentos.map((lancamento) => {
+    if (!alvos.has(lancamento.id)) {
+      return lancamento;
+    }
+    return { ...lancamento, tagsManuais: tags.remover(lancamento.tagsManuais ?? [], limpa) };
+  });
+
+  return { ...atual, lancamentos };
+}
+
+function renomearTag(atual, { de, para }) {
+  const catalogoNovo = tags.renomear(atual.tags, de, para);
+  if (catalogoNovo === atual.tags) {
+    return atual;
+  }
+
+  const antiga = tags.normalizarTag(de);
+  const nova = tags.normalizarTag(para);
+  const trocar = (lista) => (lista.includes(antiga) ? tags.acrescentar(tags.remover(lista, antiga), nova) : lista);
+
+  const lancamentos = atual.lancamentos.map((lancamento) => ({
+    ...lancamento,
+    tagsManuais: trocar(lancamento.tagsManuais ?? [])
+  }));
+  const regras = atual.regras.map((regra) => ({ ...regra, tags: trocar(regra.tags) }));
+
+  return { ...atual, tags: catalogoNovo, regras, lancamentos: reclassificar(lancamentos, regras) };
+}
+
+function removerTagDoCatalogo(atual, tag) {
+  const catalogoNovo = tags.remover(atual.tags, tag);
+  if (catalogoNovo === atual.tags) {
+    return atual;
+  }
+
+  const limpa = tags.normalizarTag(tag);
+  const lancamentos = atual.lancamentos.map((lancamento) => ({
+    ...lancamento,
+    tagsManuais: tags.remover(lancamento.tagsManuais ?? [], limpa)
+  }));
+  const regras = atual.regras.map((regra) => ({ ...regra, tags: tags.remover(regra.tags, limpa) }));
+
+  return { ...atual, tags: catalogoNovo, regras, lancamentos: reclassificar(lancamentos, regras) };
 }
 
 function criarCategoria(atual, nome) {
@@ -326,6 +423,7 @@ function carregarDados(atual, dados) {
     ...atual,
     regras,
     categorias: dados.categorias ?? atual.categorias,
+    tags: dados.tags ?? atual.tags,
     identidade: dados.identidade ?? atual.identidade,
     lancamentos,
     filtros: { ...atual.filtros, mes: meses[meses.length - 1] ?? '' }
@@ -352,6 +450,7 @@ function restaurarBackup(atual, conteudo) {
     ...atual,
     regras,
     categorias: conteudo.categorias ?? atual.categorias,
+    tags: conteudo.tags ?? atual.tags,
     identidade: conteudo.identidade ?? atual.identidade,
     lancamentos: reclassificar(lancamentos, regras),
     filtros: { ...atual.filtros, mes: meses[meses.length - 1] ?? '' },

@@ -14,6 +14,7 @@ import { criarElemento, estadoVazio } from './componentes.js';
 import { pedirTexto } from './dialogos.js';
 import { existe } from '../nucleo/catalogo.js';
 import { ordenarLancamentos } from '../nucleo/ordenar.js';
+import { acrescentarEmLote, celulaDeTags } from './tags.js';
 import { faixaDeSugestao } from './sugestoes.js';
 import { filtrosDaPlanilha, navegacaoDeMes } from './filtros.js';
 import { aplicar } from '../nucleo/filtrar.js';
@@ -220,6 +221,7 @@ function linha(lancamento, estado) {
       ])
     ]),
     criarElemento('td', {}, [celulaCategoria(lancamento, estado, fora)]),
+    criarElemento('td', { class: 'tabela__tags' }, [celulaDeTags(lancamento, estado)]),
     criarElemento('td', {
       class: classeValor(lancamento),
       texto: formatarMoeda(lancamento.valor)
@@ -252,7 +254,6 @@ function celulaCategoria(lancamento, estado, fora) {
 
   return criarElemento('div', { class: 'celula-categoria' }, [
     seletorCategoria(lancamento, estado),
-    ...lancamento.tags.map((tag) => criarElemento('span', { class: 'tag', texto: tag })),
     lancamento.revisadoManual ? criarElemento('span', { class: 'tag', texto: TEXTOS.EDITADO }) : null,
     botaoDeTotal(lancamento, TEXTOS.TIRAR, true)
   ]);
@@ -348,6 +349,7 @@ function barraDeSelecao(estado) {
   return criarElemento('div', { class: 'barra-selecao', role: 'status' }, [
     criarElemento('span', { texto: `${estado.selecao.length} ${TEXTOS.SELECIONADOS}` }),
     seletor,
+    acrescentarEmLote(estado.selecao, estado),
     acaoEmLote(estado, TEXTOS.TIRAR, true),
     acaoEmLote(estado, TEXTOS.INCLUIR, false),
     acaoEmLote(estado, TEXTOS.AUTOMATICO, null),

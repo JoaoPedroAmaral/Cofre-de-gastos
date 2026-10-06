@@ -214,7 +214,13 @@ descrever('Formato antigo do cofre', () => {
   });
 
   isso('lancamento ja no formato novo nao e alterado', () => {
-    const novo = { descricaoOriginal: 'PADARIA', valor: -100, naoGasto: false, foraDoTotalManual: false };
+    const novo = {
+      descricaoOriginal: 'PADARIA',
+      valor: -100,
+      naoGasto: false,
+      foraDoTotalManual: false,
+      tagsManuais: []
+    };
     esperar(migrar(novo)).igual(novo);
   });
 });
