@@ -29,18 +29,24 @@ export function criarLancamento(bruto) {
     comerciante: TEXTO_VAZIO,
     banco: texto(bruto.banco) || BANCO_DESCONHECIDO,
     conta: texto(bruto.conta),
+    identificadorBanco: texto(bruto.identificadorBanco),
     metodo: bruto.metodo || METODOS.OUTROS,
-    categoria: CATEGORIA_SEM_CLASSIFICACAO,
+    categoria: texto(bruto.categoria) || CATEGORIA_SEM_CLASSIFICACAO,
     tags: [],
     parcela: null,
     naoGasto: false,
-    foraDoTotalManual: null,
+    foraDoTotalManual: bruto.foraDoTotalManual ?? null,
     origem: {
       arquivo: texto(bruto.arquivo),
       linha: bruto.linha ?? null
     },
-    revisadoManual: false
+    revisadoManual: trouxeCategoria(bruto)
   };
+}
+
+function trouxeCategoria(bruto) {
+  const categoria = texto(bruto.categoria);
+  return categoria !== TEXTO_VAZIO && categoria !== CATEGORIA_SEM_CLASSIFICACAO;
 }
 
 export function migrar(lancamento) {

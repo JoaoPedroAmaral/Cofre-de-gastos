@@ -6,6 +6,8 @@ import { RESULTADOS, construirLancamentos, importarArquivos } from '../importado
 import { aplicarMapeamento } from '../importadores/tabela.js';
 import { descreverPerfil } from '../importadores/bancos/index.js';
 import { avisar, criarElemento } from './componentes.js';
+import { ORIGENS_PERIODO, unirPeriodos } from '../importadores/periodo.js';
+import { formatarPeriodo } from './formato.js';
 import { alvoUpload, icone } from './icones.js';
 import { abrirMapeador } from './mapeador.js';
 
@@ -26,6 +28,8 @@ const TEXTOS = Object.freeze({
   VER_PLANILHA: 'Ver na planilha',
   AGUARDANDO: 'Formato que ainda não conhecemos',
   RECONHECIDO: 'reconhecido como',
+  PERIODO_SUPOSTO: 'período pelo nome do arquivo',
+  PERIODO_DA_IMPORTACAO: 'Período importado:',
   PENDENCIAS: 'Linhas que não foram importadas',
   PENDENCIAS_NOTA:
     'A fatura foi lida, mas estas linhas não encaixaram no formato esperado. Nenhuma delas entrou no total. Confira na fatura e, se for lançamento, acrescente pelo extrato da conta ou pelo mapeador.'
@@ -109,7 +113,8 @@ function relatorio(arquivos, totalLancamentos) {
         criarElemento('span', {
           class: 'fraco',
           texto: `${repetidos} repetidos foram ignorados e ${foraDoTotal} ficaram fora do total.`
-        })
+        }),
+        periodoDaImportacao(arquivos)
       ]),
       criarElemento('div', { class: 'resumo-importacao__acoes' }, [
         criarElemento('button', {
@@ -125,6 +130,17 @@ function relatorio(arquivos, totalLancamentos) {
       ])
     ])
   ]);
+}
+
+function periodoDaImportacao(arquivos) {
+  const periodo = unirPeriodos(arquivos.map((item) => item.periodo));
+  if (!periodo) {
+    return null;
+  }
+  return criarElemento('span', {
+    class: 'fraco',
+    texto: ` ${TEXTOS.PERIODO_DA_IMPORTACAO} ${formatarPeriodo(periodo)}.`
+  });
 }
 
 function linhaArquivo(item) {
@@ -194,6 +210,9 @@ function detalhe(item) {
   }
 
   const partes = [];
+  if (item.periodo) {
+    partes.push(descreverPeriodo(item.periodo));
+  }
   if (item.perfil) {
     partes.push(`${TEXTOS.RECONHECIDO} ${descreverPerfil(item.perfil)}`);
   }
@@ -210,6 +229,14 @@ function detalhe(item) {
     partes.push(`${item.pendencias.length} linhas não reconhecidas`);
   }
   return partes.join(' · ') || item.banco || TEXTO_VAZIO;
+}
+
+function descreverPeriodo(periodo) {
+  const texto = formatarPeriodo(periodo);
+  if (periodo.origem === ORIGENS_PERIODO.NOME) {
+    return `${texto} (${TEXTOS.PERIODO_SUPOSTO})`;
+  }
+  return texto;
 }
 
 function numerosDoArquivo(item) {
@@ -263,6 +290,7 @@ function resumir(item, mesclagem) {
   return {
     nome: item.nome,
     resultado: item.resultado,
+    periodo: item.periodo || null,
     mensagem: item.mensagem || TEXTO_VAZIO,
     perfil: item.perfil || TEXTO_VAZIO,
     pendencias: item.pendencias || [],

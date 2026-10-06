@@ -162,14 +162,23 @@ function registrarImportacao(atual, relatorio) {
 
   const recebidos = (relatorio.lancamentos || []).map(migrar);
   const lancamentos = reclassificar([...atual.lancamentos, ...recebidos], atual.regras);
-  const meses = mesesDisponiveis(lancamentos, atual.competencia);
 
   return {
     ...atual,
     lancamentos,
-    filtros: { ...atual.filtros, mes: atual.filtros.mes || meses[meses.length - 1] || '' },
+    filtros: { ...atual.filtros, mes: mesDaImportacao(atual, recebidos, lancamentos) },
     importacao: { arquivos: mesclarArquivos(atual.importacao.arquivos, relatorio.arquivos || []) }
   };
+}
+
+function mesDaImportacao(atual, recebidos, lancamentos) {
+  const mesesQueEntraram = mesesDisponiveis(recebidos, atual.competencia);
+  if (mesesQueEntraram.length > 0) {
+    return mesesQueEntraram[mesesQueEntraram.length - 1];
+  }
+
+  const meses = mesesDisponiveis(lancamentos, atual.competencia);
+  return atual.filtros.mes || meses[meses.length - 1] || '';
 }
 
 function comRegras(atual, regras) {

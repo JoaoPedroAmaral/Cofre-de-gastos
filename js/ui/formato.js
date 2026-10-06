@@ -3,6 +3,10 @@ import { CENTAVOS_POR_UNIDADE, LOCALE, MOEDA } from '../nucleo/constantes.js';
 const PADRAO_ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
 const PADRAO_MES = /^(\d{4})-(\d{2})$/;
 const TEXTO_VAZIO = '';
+const TAMANHO_MES = 7;
+const PRIMEIRO_DIA = '-01';
+const INICIO_DO_DIA = 8;
+const ULTIMO_DIA_MINIMO = 28;
 
 const formatadorMoeda = new Intl.NumberFormat(LOCALE, {
   style: 'currency',
@@ -39,6 +43,21 @@ export function formatarMesLongo(mes) {
     return TEXTO_VAZIO;
   }
   return comInicialMaiuscula(formatadorMesLongo.format(data));
+}
+
+export function formatarPeriodo(periodo) {
+  if (!periodo) {
+    return TEXTO_VAZIO;
+  }
+  if (cobreOMesInteiro(periodo)) {
+    return formatarMesLongo(periodo.inicio.slice(0, TAMANHO_MES));
+  }
+  return `${formatarData(periodo.inicio)} a ${formatarData(periodo.fim)}`;
+}
+
+function cobreOMesInteiro({ inicio, fim }) {
+  const mesmoMes = inicio.slice(0, TAMANHO_MES) === fim.slice(0, TAMANHO_MES);
+  return mesmoMes && inicio.endsWith(PRIMEIRO_DIA) && Number(fim.slice(INICIO_DO_DIA)) >= ULTIMO_DIA_MINIMO;
 }
 
 export function formatarMesCurto(mes) {

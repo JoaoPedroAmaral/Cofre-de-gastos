@@ -22,6 +22,7 @@ const MENSAGENS = Object.freeze({
   SEM_ARMAZENAMENTO_AJUDA:
     'Este navegador bloqueou o armazenamento local, que é onde o cofre vive. Costuma acontecer quando os dados de site estão bloqueados nas configurações, ou numa janela anônima com restrição extra. Libere os dados deste site e recarregue.',
   FALHA_AO_GRAVAR: 'Não foi possível gravar no cofre deste navegador.',
+  ATUALIZADO: 'Versão nova do sistema carregada.',
   TRANCADO: 'Cofre trancado.'
 });
 
@@ -44,7 +45,7 @@ async function iniciar() {
   registrarTela(TELAS.PRIVACIDADE, telaPrivacidade);
 
   aplicarTemaSalvo();
-  registrarServicoOffline();
+  registrarServicoOffline(() => avisar(MENSAGENS.ATUALIZADO, NIVEIS_AVISO.SUCESSO));
   observar(desenhar);
   raiz.replaceChildren(telaMensagem(MENSAGENS.VERIFICANDO, MENSAGENS.VERIFICANDO_AJUDA));
 

@@ -1,4 +1,7 @@
 import { preparar } from '../nucleo/preparar.js';
+import { COMPETENCIA } from '../nucleo/constantes.js';
+import { dataDeCompetencia } from '../nucleo/modelo.js';
+import { periodoDeLancamentos, periodoDoNome } from './periodo.js';
 import { FORMATOS, detectar } from './detector.js';
 import { decodificar } from './texto.js';
 import { assinaturaDe, aplicarMapeamento } from './tabela.js';
@@ -53,10 +56,19 @@ export function construirLancamentos(brutos, identidade) {
 
 async function importarArquivo(arquivo, identidade) {
   try {
-    return await processar(arquivo, identidade);
+    const resultado = await processar(arquivo, identidade);
+    return { ...resultado, periodo: periodoDe(resultado, arquivo.nome) };
   } catch (erro) {
     return falha(arquivo, erro.message);
   }
+}
+
+function periodoDe(resultado, nome) {
+  return (
+    resultado.periodo ||
+    periodoDeLancamentos(resultado.lancamentos || [], COMPETENCIA.COMPRA, dataDeCompetencia) ||
+    periodoDoNome(nome)
+  );
 }
 
 async function processar(arquivo, identidade) {
@@ -108,6 +120,7 @@ function processarOfx(nome, texto, identidade) {
     nome,
     formato: FORMATOS.OFX,
     resultado: RESULTADOS.IMPORTADO,
+    periodo: ofx.periodoDe(texto),
     lancamentos,
     erros
   };
@@ -119,7 +132,7 @@ function processarTabela(nome, formato, tabela, identidade) {
   }
 
   const assinatura = assinaturaDe(tabela.cabecalho);
-  const mapeamento = obterMapeamento(assinatura) || reconhecer(tabela.cabecalho);
+  const mapeamento = escolherMapeamento(tabela.cabecalho, assinatura);
 
   if (!mapeamento) {
     return {
@@ -145,6 +158,14 @@ function processarTabela(nome, formato, tabela, identidade) {
     lancamentos,
     erros
   };
+}
+
+function escolherMapeamento(cabecalho, assinatura) {
+  const reconhecido = reconhecer(cabecalho);
+  if (reconhecido?.preferido) {
+    return reconhecido;
+  }
+  return obterMapeamento(assinatura) || reconhecido;
 }
 
 function falha(arquivo, mensagem) {

@@ -1,8 +1,9 @@
 import { indicePorNome } from '../tabela.js';
 import { PERFIS_NUBANK } from './nubank.js';
 import { PERFIS_PICPAY } from './picpay.js';
+import { PERFIS_DO_SISTEMA } from './sistema.js';
 
-export const PERFIS_DE_BANCO = Object.freeze([...PERFIS_NUBANK, ...PERFIS_PICPAY]);
+export const PERFIS_DE_BANCO = Object.freeze([...PERFIS_NUBANK, ...PERFIS_PICPAY, ...PERFIS_DO_SISTEMA]);
 
 const COLUNA_AUSENTE = -1;
 const SEPARADOR_DESCRICAO = ' · ';
@@ -18,6 +19,7 @@ export function reconhecer(cabecalho) {
     perfil: perfil.id,
     banco: perfil.banco,
     conta: perfil.conta,
+    preferido: Boolean(perfil.preferido),
     inverterSinal: Boolean(perfil.inverterSinal),
     colunas: resolverColunas(cabecalho, perfil.colunas)
   };

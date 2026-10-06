@@ -14,6 +14,6 @@ export const PERFIS_NUBANK = Object.freeze([
     conta: 'Conta',
     descricao: 'Extrato da conta exportado em CSV',
     exige: ['Data', 'Valor', 'Identificador', 'Descrição'],
-    colunas: { data: 'Data', valor: 'Valor', descricao: 'Descrição' }
+    colunas: { data: 'Data', valor: 'Valor', descricao: 'Descrição', identificador: 'Identificador' }
   })
 ]);

@@ -1,4 +1,4 @@
-import { chaveDe, idDe } from './identidade.js';
+import { chaveDe, chavesDe, idDe } from './identidade.js';
 
 export function mesclar(existentes, novos) {
   const jaGuardados = contarOcorrencias(existentes);
@@ -12,7 +12,7 @@ export function mesclar(existentes, novos) {
     const ocorrencia = vistosNoLote.get(chave) ?? 0;
     vistosNoLote.set(chave, ocorrencia + 1);
 
-    if (ocorrencia < (jaGuardados.get(chave) ?? 0)) {
+    if (ocorrencia < guardadas(jaGuardados, lancamento)) {
       ignorados += 1;
       return;
     }
@@ -23,12 +23,17 @@ export function mesclar(existentes, novos) {
   return { inseridos, ignorados };
 }
 
+function guardadas(contagem, lancamento) {
+  return chavesDe(lancamento).reduce((maior, chave) => Math.max(maior, contagem.get(chave) ?? 0), 0);
+}
+
 function contarOcorrencias(lancamentos) {
   const contagem = new Map();
 
   lancamentos.forEach((lancamento) => {
-    const chave = chaveDe(lancamento);
-    contagem.set(chave, (contagem.get(chave) ?? 0) + 1);
+    chavesDe(lancamento).forEach((chave) => {
+      contagem.set(chave, (contagem.get(chave) ?? 0) + 1);
+    });
   });
 
   return contagem;

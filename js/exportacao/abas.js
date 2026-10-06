@@ -1,4 +1,4 @@
-import { ORIGENS_REGRA, ROTULOS_METODO } from '../nucleo/constantes.js';
+import { COLUNAS_EXPORTACAO, CONTA_NO_TOTAL, ORIGENS_REGRA, ROTULOS_METODO } from '../nucleo/constantes.js';
 import { porCategoria, porMes } from '../nucleo/agregar.js';
 import { estaForaDoTotal, rotuloForaDoTotal } from '../nucleo/naoGasto.js';
 import { ROTULOS_OPERADOR } from '../nucleo/regras.js';
@@ -7,8 +7,6 @@ import { dataDeCompetencia } from '../nucleo/modelo.js';
 
 const TEXTO_VAZIO = '';
 const SEPARADOR_TAGS = ', ';
-const SIM = 'sim';
-const NAO = 'não';
 
 export const NOMES_ABAS = Object.freeze({
   TRANSACOES: 'Transações',
@@ -32,20 +30,7 @@ function regrasRelevantes(lancamentos, regras) {
 }
 
 function abaTransacoes(lancamentos, competencia) {
-  const cabecalho = [
-    'Data',
-    'Competência',
-    'Descrição',
-    'Estabelecimento',
-    'Categoria',
-    'Tags',
-    'Banco',
-    'Método',
-    'Parcela',
-    'Valor',
-    'Conta no total',
-    'Motivo fora do total'
-  ];
+  const cabecalho = Object.values(COLUNAS_EXPORTACAO);
 
   const linhas = lancamentos.map((lancamento) => [
     lancamento.data,
@@ -58,7 +43,7 @@ function abaTransacoes(lancamentos, competencia) {
     ROTULOS_METODO[lancamento.metodo] ?? lancamento.metodo,
     lancamento.parcela ? `${lancamento.parcela.atual}/${lancamento.parcela.total}` : TEXTO_VAZIO,
     deCentavos(lancamento.valor),
-    estaForaDoTotal(lancamento) ? NAO : SIM,
+    estaForaDoTotal(lancamento) ? CONTA_NO_TOTAL.NAO : CONTA_NO_TOTAL.SIM,
     rotuloForaDoTotal(lancamento)
   ]);
 

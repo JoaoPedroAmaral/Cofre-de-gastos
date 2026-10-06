@@ -1,7 +1,8 @@
-const VERSAO = 'v7';
+const VERSAO = 'v8';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const METODO_LIDO = 'GET';
+const PASTAS_IMUTAVEIS = ['/vendor/', '/icones/'];
 
 const ESSENCIAIS = [
   '/',
@@ -36,6 +37,7 @@ const ESSENCIAIS = [
   '/js/importadores/linhaCsv.js',
   '/js/importadores/mapeamentos.js',
   '/js/importadores/ofx.js',
+  '/js/importadores/periodo.js',
   '/js/importadores/pdf.js',
   '/js/importadores/tabela.js',
   '/js/importadores/texto.js',
@@ -43,6 +45,7 @@ const ESSENCIAIS = [
   '/js/importadores/bancos/index.js',
   '/js/importadores/bancos/nubank.js',
   '/js/importadores/bancos/picpay.js',
+  '/js/importadores/bancos/sistema.js',
   '/js/importadores/faturas/emissores.js',
   '/js/importadores/faturas/lancamentos.js',
   '/js/importadores/faturas/layout.js',
@@ -106,10 +109,20 @@ self.addEventListener('fetch', (evento) => {
     return;
   }
 
-  const revalidacao = revalidar(pedido);
-  evento.waitUntil(revalidacao);
-  evento.respondWith(responderRecurso(pedido, revalidacao));
+  if (ehImutavel(pedido)) {
+    const revalidacao = revalidar(pedido);
+    evento.waitUntil(revalidacao);
+    evento.respondWith(responderDoCache(pedido, revalidacao));
+    return;
+  }
+
+  evento.respondWith(responderDaRede(pedido));
 });
+
+function ehImutavel(pedido) {
+  const caminho = new URL(pedido.url).pathname;
+  return PASTAS_IMUTAVEIS.some((pasta) => caminho.startsWith(pasta));
+}
 
 async function guardarEssenciais() {
   const cache = await caches.open(NOME_DO_CACHE);
@@ -133,7 +146,7 @@ async function responderNavegacao(pedido) {
   }
 }
 
-async function responderRecurso(pedido, revalidacao) {
+async function responderDoCache(pedido, revalidacao) {
   const cache = await caches.open(NOME_DO_CACHE);
   const guardada = await cache.match(pedido);
   if (guardada) {
@@ -142,6 +155,17 @@ async function responderRecurso(pedido, revalidacao) {
 
   const atualizada = await revalidacao;
   return atualizada || Response.error();
+}
+
+async function responderDaRede(pedido) {
+  const atualizada = await revalidar(pedido);
+  if (atualizada) {
+    return atualizada;
+  }
+
+  const cache = await caches.open(NOME_DO_CACHE);
+  const guardada = await cache.match(pedido);
+  return guardada || Response.error();
 }
 
 async function revalidar(pedido) {

@@ -1,4 +1,6 @@
 import { deCentavos, paraCentavos } from '../nucleo/dinheiro.js';
+import { CONTA_NO_TOTAL, MOTIVOS_NAO_GASTO } from '../nucleo/constantes.js';
+import { ROTULOS_NAO_GASTO } from '../nucleo/naoGasto.js';
 
 const SEPARADOR_ASSINATURA = '|';
 const ACENTOS = /[\u0300-\u036f]/g;
@@ -20,7 +22,10 @@ export function aplicarMapeamento(tabela, mapeamento, contexto = {}) {
       data: celula(linha, colunas.data),
       valor: comSinal(valorDa(linha, colunas), mapeamento.inverterSinal),
       descricaoOriginal: celula(linha, colunas.descricao),
-      banco: mapeamento.banco || contexto.banco || TEXTO_VAZIO,
+      identificadorBanco: celula(linha, colunas.identificador),
+      categoria: celula(linha, colunas.categoria),
+      foraDoTotalManual: decisaoManualDa(linha, colunas),
+      banco: celula(linha, colunas.banco) || mapeamento.banco || contexto.banco || TEXTO_VAZIO,
       conta: mapeamento.conta || TEXTO_VAZIO,
       arquivo: contexto.arquivo || TEXTO_VAZIO,
       linha: indice + PRIMEIRA_LINHA_PLANILHA
@@ -42,6 +47,16 @@ export function indicePorNome(cabecalho, nome) {
     return COLUNA_AUSENTE;
   }
   return cabecalho.findIndex((coluna) => normalizarNome(coluna) === procurado);
+}
+
+function decisaoManualDa(linha, colunas) {
+  const conta = celula(linha, colunas.contaNoTotal).toLowerCase();
+  const motivo = celula(linha, colunas.motivoForaDoTotal).toLowerCase();
+
+  if (conta !== CONTA_NO_TOTAL.NAO) {
+    return null;
+  }
+  return motivo === ROTULOS_NAO_GASTO[MOTIVOS_NAO_GASTO.MANUAL] ? true : null;
 }
 
 function comSinal(valor, inverter) {

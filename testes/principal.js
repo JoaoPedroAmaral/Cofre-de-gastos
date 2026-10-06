@@ -4,6 +4,7 @@ import './casos/estado.js';
 import './casos/dinheiro.js';
 import './casos/datas.js';
 import './casos/importacao.js';
+import './casos/periodo.js';
 import './casos/bancos.js';
 import './casos/fatura.js';
 import './casos/extrato.js';

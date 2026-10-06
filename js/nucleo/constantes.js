@@ -147,6 +147,26 @@ export const COLUNAS_PLANILHA = Object.freeze([
   { campo: 'valor', rotulo: 'Valor', tipo: TIPOS_COLUNA.MOEDA }
 ]);
 
+export const COLUNAS_EXPORTACAO = Object.freeze({
+  DATA: 'Data',
+  COMPETENCIA: 'Competência',
+  DESCRICAO: 'Descrição',
+  ESTABELECIMENTO: 'Estabelecimento',
+  CATEGORIA: 'Categoria',
+  TAGS: 'Tags',
+  BANCO: 'Banco',
+  METODO: 'Método',
+  PARCELA: 'Parcela',
+  VALOR: 'Valor',
+  CONTA_NO_TOTAL: 'Conta no total',
+  MOTIVO_FORA_DO_TOTAL: 'Motivo fora do total'
+});
+
+export const CONTA_NO_TOTAL = Object.freeze({
+  SIM: 'sim',
+  NAO: 'não'
+});
+
 export const MOTIVOS_NAO_GASTO = Object.freeze({
   CONTA_PROPRIA: 'conta_propria',
   TRANSFERENCIA: 'transferencia',

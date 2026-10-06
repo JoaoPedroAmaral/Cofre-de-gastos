@@ -1,4 +1,6 @@
 import { METODOS } from '../nucleo/constantes.js';
+import { paraIso } from '../nucleo/datas.js';
+import { ORIGENS_PERIODO } from './periodo.js';
 
 const BLOCO_TRANSACAO = /<STMTTRN>([\s\S]*?)<\/STMTTRN>/gi;
 const BLOCO_TRANSACAO_ABERTO = /<STMTTRN>([\s\S]*?)(?=<STMTTRN>|<\/BANKTRANLIST>|<\/CCSTMTRS>|<\/STMTRS>|$)/gi;
@@ -20,6 +22,11 @@ const CAMPOS_CONTA = Object.freeze({
   ORGANIZACAO: 'ORG'
 });
 
+const CAMPOS_PERIODO = Object.freeze({
+  INICIO: 'DTSTART',
+  FIM: 'DTEND'
+});
+
 export function analisar(texto, arquivo) {
   const cartao = MARCA_CARTAO.test(texto);
   const banco = valorDaTag(texto, CAMPOS_CONTA.ORGANIZACAO) || valorDaTag(texto, CAMPOS_CONTA.BANCO);
@@ -38,6 +45,16 @@ export function analisar(texto, arquivo) {
     arquivo,
     linha: indice + 1
   }));
+}
+
+export function periodoDe(texto) {
+  const inicio = paraIso(valorDaTag(texto, CAMPOS_PERIODO.INICIO));
+  const fim = paraIso(valorDaTag(texto, CAMPOS_PERIODO.FIM));
+
+  if (!inicio || !fim) {
+    return null;
+  }
+  return { inicio, fim, origem: ORIGENS_PERIODO.CONTEUDO };
 }
 
 function extrairBlocos(texto) {
