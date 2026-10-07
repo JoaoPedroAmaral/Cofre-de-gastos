@@ -1,6 +1,7 @@
 import { NOME_BANCO, STORES, VERSAO_BANCO } from '../nucleo/constantes.js';
 
 const CHAVE_PRIMARIA = 'id';
+const SESSAO_UNICA = 'atual';
 const SOMENTE_LEITURA = 'readonly';
 const LEITURA_E_ESCRITA = 'readwrite';
 
@@ -33,7 +34,33 @@ export async function salvarPerfil(perfil) {
 
 export async function removerPerfil(id) {
   const banco = await abrirBanco();
-  await Promise.all([apagar(banco, STORES.PERFIS, id), apagarDoPerfil(banco, id)]);
+  await Promise.all([
+    apagar(banco, STORES.PERFIS, id),
+    apagarDoPerfil(banco, id),
+    apagarSessaoDoPerfil(banco, id)
+  ]);
+}
+
+export async function lerSessao() {
+  const banco = await abrirBanco();
+  return new Promise((resolver, rejeitar) => {
+    const pedido = banco
+      .transaction(STORES.SESSAO, SOMENTE_LEITURA)
+      .objectStore(STORES.SESSAO)
+      .get(SESSAO_UNICA);
+
+    pedido.onsuccess = () => resolver(pedido.result ?? null);
+    pedido.onerror = () => rejeitar(pedido.error);
+  });
+}
+
+export async function gravarSessao(sessao) {
+  return gravar(STORES.SESSAO, { ...sessao, id: SESSAO_UNICA });
+}
+
+export async function apagarSessao() {
+  const banco = await abrirBanco();
+  return apagar(banco, STORES.SESSAO, SESSAO_UNICA);
 }
 
 export async function lerCofre(perfilId, colecao) {
@@ -65,6 +92,9 @@ function criarEstrutura(banco) {
   if (!banco.objectStoreNames.contains(STORES.LANCAMENTOS)) {
     banco.createObjectStore(STORES.LANCAMENTOS, { keyPath: CHAVE_PRIMARIA });
   }
+  if (!banco.objectStoreNames.contains(STORES.SESSAO)) {
+    banco.createObjectStore(STORES.SESSAO, { keyPath: CHAVE_PRIMARIA });
+  }
 }
 
 function chaveDaColecao(perfilId, colecao) {
@@ -94,6 +124,23 @@ function apagar(banco, nomeDaStore, id) {
   return new Promise((resolver, rejeitar) => {
     const transacao = banco.transaction(nomeDaStore, LEITURA_E_ESCRITA);
     transacao.objectStore(nomeDaStore).delete(id);
+    transacao.oncomplete = resolver;
+    transacao.onerror = () => rejeitar(transacao.error);
+  });
+}
+
+function apagarSessaoDoPerfil(banco, perfilId) {
+  return new Promise((resolver, rejeitar) => {
+    const transacao = banco.transaction(STORES.SESSAO, LEITURA_E_ESCRITA);
+    const store = transacao.objectStore(STORES.SESSAO);
+    const pedido = store.get(SESSAO_UNICA);
+
+    pedido.onsuccess = () => {
+      if (pedido.result && pedido.result.perfilId === perfilId) {
+        store.delete(SESSAO_UNICA);
+      }
+    };
+
     transacao.oncomplete = resolver;
     transacao.onerror = () => rejeitar(transacao.error);
   });

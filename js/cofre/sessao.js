@@ -1,6 +1,6 @@
-import { MINUTOS_AUTO_LOCK } from '../nucleo/constantes.js';
+import { esquecer, guardar, renovar } from './sessaoGuardada.js';
+import { JANELA_DE_INATIVIDADE } from './validadeDaSessao.js';
 
-const MILISSEGUNDOS_POR_MINUTO = 60000;
 const EVENTOS_DE_ATIVIDADE = ['pointerdown', 'keydown', 'wheel'];
 
 let chaveEmMemoria = null;
@@ -8,14 +8,13 @@ let perfilAberto = null;
 let temporizador = null;
 let aoTravar = null;
 
-export function abrirSessao(perfil, chave, aoTravarAgora) {
-  chaveEmMemoria = chave;
-  perfilAberto = perfil;
-  aoTravar = aoTravarAgora;
+export async function abrirSessao(perfil, chave, aoTravarAgora) {
+  assumir(perfil, chave, aoTravarAgora, JANELA_DE_INATIVIDADE);
+  await guardar(perfil.id, chave);
+}
 
-  EVENTOS_DE_ATIVIDADE.forEach((evento) => window.addEventListener(evento, adiar, { passive: true }));
-  window.addEventListener('beforeunload', travar);
-  adiar();
+export function retomarSessao(perfil, chave, aoTravarAgora, restante) {
+  assumir(perfil, chave, aoTravarAgora, restante);
 }
 
 export function travar() {
@@ -23,8 +22,8 @@ export function travar() {
   perfilAberto = null;
   cancelar();
 
-  EVENTOS_DE_ATIVIDADE.forEach((evento) => window.removeEventListener(evento, adiar));
-  window.removeEventListener('beforeunload', travar);
+  EVENTOS_DE_ATIVIDADE.forEach((evento) => window.removeEventListener(evento, aoAgir));
+  esquecer();
 
   if (aoTravar) {
     const avisar = aoTravar;
@@ -33,9 +32,25 @@ export function travar() {
   }
 }
 
-function adiar() {
+function assumir(perfil, chave, aoTravarAgora, tempo) {
+  chaveEmMemoria = chave;
+  perfilAberto = perfil;
+  aoTravar = aoTravarAgora;
+
+  EVENTOS_DE_ATIVIDADE.forEach((evento) => window.addEventListener(evento, aoAgir, { passive: true }));
+  adiar(tempo);
+}
+
+function aoAgir() {
+  adiar(JANELA_DE_INATIVIDADE);
+  if (perfilAberto && chaveEmMemoria) {
+    renovar(perfilAberto.id, chaveEmMemoria);
+  }
+}
+
+function adiar(tempo) {
   cancelar();
-  temporizador = window.setTimeout(travar, MINUTOS_AUTO_LOCK * MILISSEGUNDOS_POR_MINUTO);
+  temporizador = window.setTimeout(travar, tempo);
 }
 
 function cancelar() {

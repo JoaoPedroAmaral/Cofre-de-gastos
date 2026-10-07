@@ -12,7 +12,8 @@ import { telaPrivacidade } from './ui/privacidade.js';
 import { telaCofre, telaMensagem } from './ui/cadeado.js';
 import { listarPerfis } from './armazenamento/banco.js';
 import { agendarGravacao, cancelarGravacao, carregarDoCofre } from './armazenamento/cofreDeDados.js';
-import { abrirSessao } from './cofre/sessao.js';
+import { abrirSessao, retomarSessao } from './cofre/sessao.js';
+import { esquecer, recuperar } from './cofre/sessaoGuardada.js';
 import { registrarServicoOffline } from './carregadores/servicoOffline.js';
 
 const MENSAGENS = Object.freeze({
@@ -55,6 +56,13 @@ async function iniciar() {
 async function verificarPerfis() {
   try {
     const perfis = await listarPerfis();
+    const retomada = await sessaoParaRetomar(perfis);
+
+    if (retomada) {
+      await aoRetomar(retomada, perfis);
+      return;
+    }
+
     despachar(ACOES.DEFINIR_ESTADO_DO_COFRE, {
       situacao: perfis.length === 0 ? ESTADOS_COFRE.SEM_COFRE : ESTADOS_COFRE.TRAVADO,
       perfil: perfis[0] ?? null,
@@ -91,9 +99,32 @@ function desenhar(estado) {
   }
 }
 
+async function sessaoParaRetomar(perfis) {
+  const guardada = await recuperar();
+  if (!guardada) {
+    return null;
+  }
+
+  const perfil = perfis.find((candidato) => candidato.id === guardada.perfilId);
+  if (!perfil) {
+    await esquecer();
+    return null;
+  }
+
+  return { perfil, chave: guardada.chave, restante: guardada.restante };
+}
+
 async function aoAbrir(perfil, chave, restaurado = null) {
-  const perfis = await listarPerfis();
-  abrirSessao(perfil, chave, aoTravar);
+  await abrirSessao(perfil, chave, aoTravar);
+  await entrar(perfil, chave, restaurado, await listarPerfis());
+}
+
+async function aoRetomar({ perfil, chave, restante }, perfis) {
+  retomarSessao(perfil, chave, aoTravar, restante);
+  await entrar(perfil, chave, null, perfis);
+}
+
+async function entrar(perfil, chave, restaurado, perfis) {
   despachar(ACOES.DEFINIR_ESTADO_DO_COFRE, { situacao: ESTADOS_COFRE.ABERTO, perfil, perfis });
 
   const dados = restaurado ?? (await carregarDoCofre(perfil.id, chave));

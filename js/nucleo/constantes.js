@@ -215,14 +215,15 @@ export const ORIGENS_REGRA = Object.freeze({
 });
 
 export const NOME_BANCO = 'gastos-controller';
-export const VERSAO_BANCO = 1;
+export const VERSAO_BANCO = 2;
 
 export const STORES = Object.freeze({
   LANCAMENTOS: 'lancamentos',
   REGRAS: 'regras',
   CATEGORIAS: 'categorias',
   MAPEAMENTOS: 'mapeamentos',
-  PERFIS: 'perfis'
+  PERFIS: 'perfis',
+  SESSAO: 'sessao'
 });
 
 export const DERIVACAO = Object.freeze({
@@ -244,6 +245,8 @@ export const ESTADOS_COFRE = Object.freeze({
 export const LIMITE_DE_PERFIS = 8;
 
 export const MINUTOS_AUTO_LOCK = 10;
+
+export const SEGUNDOS_ENTRE_RENOVACOES = 30;
 
 export const FORMATOS_EXPORTACAO = Object.freeze({
   XLSX: 'xlsx',

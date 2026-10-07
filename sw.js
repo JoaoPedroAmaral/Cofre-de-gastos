@@ -1,6 +1,7 @@
-const VERSAO = 'v10';
+const VERSAO = 'v11';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
+const RAIZ = '/';
 const METODO_LIDO = 'GET';
 const PASTAS_IMUTAVEIS = ['/vendor/', '/icones/'];
 
@@ -22,8 +23,11 @@ const ESSENCIAIS = [
   '/js/cofre/bytes.js',
   '/js/cofre/cofre.js',
   '/js/cofre/derivacao.js',
+  '/js/cofre/marcadorDeAba.js',
   '/js/cofre/recuperacao.js',
   '/js/cofre/sessao.js',
+  '/js/cofre/sessaoGuardada.js',
+  '/js/cofre/validadeDaSessao.js',
   '/js/dados/regrasSemente.js',
   '/js/estado/store.js',
   '/js/exportacao/abas.js',
@@ -152,12 +156,19 @@ async function responderNavegacao(pedido) {
   const cache = await caches.open(NOME_DO_CACHE);
   try {
     const resposta = await fetch(pedido);
-    await cache.put(PAGINA, resposta.clone());
+    if (ehAPaginaDoApp(pedido)) {
+      await cache.put(PAGINA, resposta.clone());
+    }
     return resposta;
   } catch {
-    const guardada = await cache.match(PAGINA);
+    const guardada = (await cache.match(pedido)) ?? (await cache.match(PAGINA));
     return guardada || Response.error();
   }
+}
+
+function ehAPaginaDoApp(pedido) {
+  const caminho = new URL(pedido.url).pathname;
+  return caminho === RAIZ || caminho === PAGINA;
 }
 
 async function responderDoCache(pedido, revalidacao) {
