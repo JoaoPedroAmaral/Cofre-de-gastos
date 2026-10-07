@@ -293,13 +293,6 @@
   font-size: var(--texto-md);
 }
 
-.tela--texto {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espaco-6);
-  max-width: 68ch;
-}
-
 .secao-texto {
   display: flex;
   flex-direction: column;
@@ -1965,10 +1958,13 @@ select.etiqueta.etiqueta--vazia {
   color: var(--cor-marca-clara);
 }
 
-.pagina__conteudo {
+.coluna-de-leitura {
   width: 100%;
   max-width: 76ch;
   margin: 0 auto;
+}
+
+.pagina__conteudo {
   padding: var(--espaco-8) var(--espaco-6);
 }
 
@@ -1992,12 +1988,12 @@ select.etiqueta.etiqueta--vazia {
   font-size: var(--texto-sm);
 }
 
-.pagina__conteudo .fraco {
+.coluna-de-leitura .fraco {
   display: block;
   margin-top: var(--espaco-3);
 }
 
-.pagina__conteudo .secao-texto {
+.coluna-de-leitura .secao-texto {
   margin-top: var(--espaco-6);
 }
 

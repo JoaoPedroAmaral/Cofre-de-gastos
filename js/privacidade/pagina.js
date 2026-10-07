@@ -1,5 +1,5 @@
 import { TERMO } from './termo.js';
-import { secoesDoTermo, versaoDoTermo } from './conteudo.js';
+import { CLASSE_DA_COLUNA, corpoDoTermo } from './corpo.js';
 
 const ATRIBUTO_TEXTO = 'texto';
 const ID_DO_CONTEUDO = 'termo';
@@ -67,8 +67,7 @@ function cabecalho() {
 
 function rodape() {
   return criar('footer', { class: 'pagina__rodape' }, [
-    criar('span', { class: 'fraco', texto: TEXTOS.RODAPE }),
-    criar('a', { class: 'botao botao--discreto', href: ENDERECO_DO_SISTEMA, texto: TEXTOS.VOLTAR })
+    criar('span', { class: 'fraco', texto: TEXTOS.RODAPE })
   ]);
 }
 
@@ -80,13 +79,7 @@ function montar() {
 
   destino.replaceChildren(
     cabecalho(),
-    criar('main', { class: 'pagina__conteudo', id: 'conteudo' }, [
-      criar('h1', { class: 'pagina__titulo', texto: TERMO.titulo }),
-      criar('p', { class: 'pagina__resumo', texto: TERMO.resumo }),
-      criar('p', { class: 'pagina__nota', texto: TERMO.nota }),
-      criar('p', { class: 'fraco', texto: versaoDoTermo() }),
-      ...secoesDoTermo(criar)
-    ]),
+    criar('main', { class: `pagina__conteudo ${CLASSE_DA_COLUNA}`, id: 'conteudo' }, corpoDoTermo(criar)),
     rodape()
   );
 

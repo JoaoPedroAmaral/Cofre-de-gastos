@@ -1,4 +1,4 @@
-const VERSAO = 'v11';
+const VERSAO = 'v12';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const RAIZ = '/';
@@ -56,6 +56,7 @@ const ESSENCIAIS = [
   '/js/importadores/faturas/layout.js',
   '/js/importadores/faturas/periodo.js',
   '/js/privacidade/conteudo.js',
+  '/js/privacidade/corpo.js',
   '/js/privacidade/pagina.js',
   '/js/privacidade/termo.js',
   '/js/nucleo/agregar.js',
