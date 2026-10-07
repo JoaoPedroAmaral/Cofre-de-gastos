@@ -1,4 +1,6 @@
 import { descrever, esperar, isso } from '../runner.js';
+import { atualizarTelaCofre, telaCofre } from '../../js/ui/cadeado.js';
+import { ESTADOS_COFRE } from '../../js/nucleo/constantes.js';
 import {
   MENSAGENS_COFRE,
   TAMANHO_MINIMO_SENHA,
@@ -356,5 +358,97 @@ descrever('Backup cifrado', () => {
   isso('converte bytes para base64 e de volta sem perder nada', () => {
     const bytes = new Uint8Array([0, 1, 127, 128, 255]);
     esperar([...deBase64(paraBase64(bytes))]).igual([...bytes]);
+  });
+});
+
+descrever('Trocar de perfil na tela de entrada', () => {
+  const PERFIS = [
+    { id: 'p1', nome: 'Pessoal' },
+    { id: 'p2', nome: 'Trabalho' }
+  ];
+
+  function estadoTravado(escolhido) {
+    return {
+      cofre: {
+        situacao: ESTADOS_COFRE.TRAVADO,
+        perfil: PERFIS.find((perfil) => perfil.id === escolhido),
+        perfis: PERFIS,
+        erro: ''
+      }
+    };
+  }
+
+  function montar(escolhido) {
+    return telaCofre(estadoTravado(escolhido), { aoAbrir() {}, aoApagar() {} });
+  }
+
+  function botoesDePerfil(tela) {
+    return [...tela.querySelectorAll('.perfis .perfil')];
+  }
+
+  function marcado(tela) {
+    return tela.querySelector('.perfil--ativo')?.textContent ?? null;
+  }
+
+  isso('comeca com o perfil escolhido marcado', () => {
+    esperar(marcado(montar('p1'))).contem('Pessoal');
+  });
+
+  isso('trocar de perfil muda a marcacao', () => {
+    const tela = montar('p1');
+    atualizarTelaCofre(estadoTravado('p2'));
+
+    esperar(marcado(tela)).contem('Trabalho');
+  });
+
+  isso('trocar de perfil nao remonta a tela inteira', () => {
+    const tela = montar('p1');
+    const formulario = tela.querySelector('.cofre__formulario');
+    const caixaDePerfis = tela.querySelector('.perfis');
+
+    atualizarTelaCofre(estadoTravado('p2'));
+
+    esperar(tela.querySelector('.cofre__formulario') === formulario).verdadeiro();
+    esperar(tela.querySelector('.perfis') === caixaDePerfis).verdadeiro();
+  });
+
+  isso('o perfil que nao mudou mantem o proprio no', () => {
+    const tela = montar('p1');
+    const naoEscolhido = botoesDePerfil(tela).find((botao) => botao.textContent.includes('Trabalho'));
+
+    atualizarTelaCofre(estadoTravado('p1'));
+
+    esperar(botoesDePerfil(tela).includes(naoEscolhido)).verdadeiro();
+  });
+
+  isso('trocar de perfil muitas vezes nao faz a lista crescer', () => {
+    const tela = montar('p1');
+    const antes = botoesDePerfil(tela).length;
+
+    for (let volta = 0; volta < 10; volta += 1) {
+      atualizarTelaCofre(estadoTravado(volta % 2 === 0 ? 'p2' : 'p1'));
+    }
+
+    esperar(botoesDePerfil(tela).length).igual(antes);
+    esperar(tela.querySelectorAll('.perfil--ativo').length).igual(1);
+  });
+
+  isso('o rotulo da senha acompanha o perfil escolhido', () => {
+    const tela = montar('p1');
+    const rotuloDe = () => tela.querySelector('.campo .campo__rotulo').textContent;
+
+    esperar(rotuloDe()).contem('Pessoal');
+    atualizarTelaCofre(estadoTravado('p2'));
+    esperar(rotuloDe()).contem('Trabalho');
+  });
+
+  isso('a senha digitada nao vaza de um perfil para o outro', () => {
+    const tela = montar('p1');
+    const senha = tela.querySelector('#senha-cofre');
+    senha.value = 'segredo-do-pessoal';
+
+    atualizarTelaCofre(estadoTravado('p2'));
+
+    esperar(tela.querySelector('#senha-cofre').value).igual('');
   });
 });

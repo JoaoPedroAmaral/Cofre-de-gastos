@@ -9,7 +9,7 @@ import { telaPainel } from './ui/painel.js';
 import { telaExportar } from './ui/exportar.js';
 import { telaAjustes } from './ui/ajustes.js';
 import { telaPrivacidade } from './ui/privacidade.js';
-import { telaCofre, telaMensagem } from './ui/cadeado.js';
+import { atualizarTelaCofre, telaCofre, telaMensagem } from './ui/cadeado.js';
 import { listarPerfis } from './armazenamento/banco.js';
 import { agendarGravacao, cancelarGravacao, carregarDoCofre } from './armazenamento/cofreDeDados.js';
 import { abrirSessao, retomarSessao } from './cofre/sessao.js';
@@ -83,20 +83,40 @@ function descreverFalha(falha) {
 }
 
 function desenhar(estado) {
-  const marcador = `${estado.cofre.situacao}:${estado.cofre.perfil?.id ?? ''}:${estado.cofre.perfis.length}`;
-  if (marcador === situacaoDesenhada) {
+  if (estado.cofre.situacao === ESTADOS_COFRE.VERIFICANDO) {
     return;
   }
-  situacaoDesenhada = marcador;
 
+  const marcador = marcadorDoCofre(estado);
+  if (marcador === situacaoDesenhada) {
+    atualizarCofreDesenhado(estado);
+    return;
+  }
+
+  situacaoDesenhada = marcador;
+  desenharDoZero(estado);
+}
+
+function atualizarCofreDesenhado(estado) {
+  if (estado.cofre.situacao === ESTADOS_COFRE.ABERTO) {
+    return;
+  }
+  atualizarTelaCofre(estado);
+}
+
+function desenharDoZero(estado) {
   if (estado.cofre.situacao === ESTADOS_COFRE.ABERTO) {
     montarLayout(raiz);
     return;
   }
-  if (estado.cofre.situacao !== ESTADOS_COFRE.VERIFICANDO) {
-    raiz.classList.remove('app');
-    raiz.replaceChildren(telaCofre(estado, { aoAbrir, aoApagar: verificarPerfis }));
-  }
+
+  raiz.classList.remove('app');
+  raiz.replaceChildren(telaCofre(estado, { aoAbrir, aoApagar: verificarPerfis }));
+}
+
+function marcadorDoCofre(estado) {
+  const temPerfil = estado.cofre.perfil === null ? 'sem' : 'com';
+  return `${estado.cofre.situacao}:${estado.cofre.perfis.length}:${temPerfil}`;
 }
 
 async function sessaoParaRetomar(perfis) {

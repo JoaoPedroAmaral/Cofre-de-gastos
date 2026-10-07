@@ -15,6 +15,7 @@ import { MENSAGENS_BACKUP, abrirBackup, restaurarMapeamentos } from '../armazena
 import { baixar } from '../exportacao/arquivo.js';
 import { avisar, criarElemento } from './componentes.js';
 import { marca } from './icones.js';
+import { reconciliarLista } from './reconciliar.js';
 
 const PASSOS = Object.freeze({ SENHA: 1, CODIGO: 2 });
 const NOME_PADRAO = 'Pessoal';
@@ -77,7 +78,21 @@ export function telaMensagem(titulo, texto, detalhe) {
   return moldura(titulo, texto, conteudo);
 }
 
+const SEPARADOR_DE_ASSINATURA = '~';
+const TEXTO_LIMPO = '';
+
+let atualizarDesbloqueio = null;
+
+export function atualizarTelaCofre(estado) {
+  if (!atualizarDesbloqueio) {
+    return false;
+  }
+  atualizarDesbloqueio(estado);
+  return true;
+}
+
 export function telaCofre(estado, acoes) {
+  atualizarDesbloqueio = null;
   if (estado.cofre.situacao === ESTADOS_COFRE.SEM_COFRE) {
     return telaCriacao(estado, acoes, false);
   }
@@ -149,9 +164,12 @@ function telaDesbloqueio(estado, acoes) {
   const codigo = campoSecreto('codigo-cofre', TEXTOS.CODIGO, 'text');
   const erro = criarElemento('p', { class: 'cofre__erro', texto: estado.cofre.erro });
 
+  let atual = estado;
   let comCodigo = false;
 
   const campo = criarElemento('div', { class: 'campo' }, [rotulado(senha, rotuloDaSenha(estado))]);
+  const perfis = escolhaDePerfis(estado);
+  const ajuda = criarElemento('p', { class: 'fraco', texto: ajudaDoDesbloqueio(estado) });
 
   const formulario = criarElemento('form', {
     class: 'cofre__formulario',
@@ -165,9 +183,9 @@ function telaDesbloqueio(estado, acoes) {
 
       try {
         const chave = comCodigo
-          ? await abrirComCodigo(estado.cofre.perfil, codigo.value)
-          : await abrirComSenha(estado.cofre.perfil, senha.value);
-        acoes.aoAbrir(estado.cofre.perfil, chave);
+          ? await abrirComCodigo(atual.cofre.perfil, codigo.value)
+          : await abrirComSenha(atual.cofre.perfil, senha.value);
+        acoes.aoAbrir(atual.cofre.perfil, chave);
       } catch (falha) {
         erro.textContent = falha.message;
       }
@@ -181,7 +199,7 @@ function telaDesbloqueio(estado, acoes) {
     onClick: () => {
       comCodigo = !comCodigo;
       alternar.textContent = comCodigo ? TEXTOS.USAR_SENHA : TEXTOS.USAR_CODIGO;
-      campo.replaceChildren(comCodigo ? rotulado(codigo, TEXTOS.CODIGO) : rotulado(senha, rotuloDaSenha(estado)));
+      campo.replaceChildren(comCodigo ? rotulado(codigo, TEXTOS.CODIGO) : rotulado(senha, rotuloDaSenha(atual)));
       erro.textContent = '';
       (comCodigo ? codigo : senha).focus();
     }
@@ -194,47 +212,85 @@ function telaDesbloqueio(estado, acoes) {
     alternar
   );
 
-  const ajuda = estado.cofre.perfis.length > 1 ? TEXTOS.ESCOLHA_PERFIL : TEXTOS.TRANCADO_AJUDA;
+  atualizarDesbloqueio = (novo) => {
+    atual = novo;
+    atualizarPerfis(perfis, novo);
+    ajuda.textContent = ajudaDoDesbloqueio(novo);
+    erro.textContent = novo.cofre.erro;
+    senha.value = TEXTO_LIMPO;
+    codigo.value = TEXTO_LIMPO;
+    if (!comCodigo) {
+      campo.querySelector('.campo__rotulo').textContent = rotuloDaSenha(novo);
+    }
+  };
 
-  return moldura(TEXTOS.TRANCADO, ajuda, [escolhaDePerfis(estado), formulario, apagarPerfil(estado, acoes)]);
+  return moldura(TEXTOS.TRANCADO, ajuda, [perfis, formulario, apagarPerfil(estado, acoes)]);
+}
+
+function ajudaDoDesbloqueio(estado) {
+  return estado.cofre.perfis.length > 1 ? TEXTOS.ESCOLHA_PERFIL : TEXTOS.TRANCADO_AJUDA;
 }
 
 function escolhaDePerfis(estado) {
-  const botoes = estado.cofre.perfis.map((perfil) =>
-    criarElemento(
-      'button',
-      {
-        class: perfil.id === estado.cofre.perfil?.id ? 'perfil perfil--ativo' : 'perfil',
-        type: 'button',
-        role: 'radio',
-        'aria-checked': String(perfil.id === estado.cofre.perfil?.id),
-        onClick: () => despachar(ACOES.SELECIONAR_PERFIL, perfil.id)
-      },
-      [
-        criarElemento('span', { class: 'perfil__inicial', texto: inicialDe(perfil.nome) }),
-        criarElemento('span', { texto: perfil.nome })
-      ]
-    )
-  );
+  const caixa = criarElemento('div', { class: 'perfis', role: 'radiogroup', 'aria-label': TEXTOS.NOME });
+  atualizarPerfis(caixa, estado);
+  return caixa;
+}
+
+function atualizarPerfis(caixa, estado) {
+  reconciliarLista(caixa, itensDePerfil(estado), {
+    chaveDe: (item) => item.chave,
+    assinaturaDe: (item) => item.assinatura,
+    montar: (item) => item.montar()
+  });
+}
+
+function itensDePerfil(estado) {
+  const escolhido = estado.cofre.perfil?.id;
+
+  const itens = estado.cofre.perfis.map((perfil) => ({
+    chave: perfil.id,
+    assinatura: [perfil.nome, perfil.id === escolhido].join(SEPARADOR_DE_ASSINATURA),
+    montar: () => botaoDePerfil(perfil, perfil.id === escolhido)
+  }));
 
   if (estado.cofre.perfis.length < LIMITE_DE_PERFIS) {
-    botoes.push(
-      criarElemento(
-        'button',
-        {
-          class: 'perfil',
-          type: 'button',
-          onClick: () => despachar(ACOES.SELECIONAR_PERFIL, NOVO_PERFIL)
-        },
-        [
-          criarElemento('span', { class: 'perfil__inicial perfil__inicial--novo', texto: '+' }),
-          criarElemento('span', { texto: TEXTOS.NOVO })
-        ]
-      )
-    );
+    itens.push({ chave: NOVO_PERFIL, assinatura: NOVO_PERFIL, montar: botaoDeNovoPerfil });
   }
 
-  return criarElemento('div', { class: 'perfis', role: 'radiogroup', 'aria-label': TEXTOS.NOME }, botoes);
+  return itens;
+}
+
+function botaoDePerfil(perfil, escolhido) {
+  return criarElemento(
+    'button',
+    {
+      class: escolhido ? 'perfil perfil--ativo' : 'perfil',
+      type: 'button',
+      role: 'radio',
+      'aria-checked': String(escolhido),
+      onClick: () => despachar(ACOES.SELECIONAR_PERFIL, perfil.id)
+    },
+    [
+      criarElemento('span', { class: 'perfil__inicial', texto: inicialDe(perfil.nome) }),
+      criarElemento('span', { texto: perfil.nome })
+    ]
+  );
+}
+
+function botaoDeNovoPerfil() {
+  return criarElemento(
+    'button',
+    {
+      class: 'perfil',
+      type: 'button',
+      onClick: () => despachar(ACOES.SELECIONAR_PERFIL, NOVO_PERFIL)
+    },
+    [
+      criarElemento('span', { class: 'perfil__inicial perfil__inicial--novo', texto: '+' }),
+      criarElemento('span', { texto: TEXTOS.NOVO })
+    ]
+  );
 }
 
 function apagarPerfil(estado, acoes) {

@@ -10,7 +10,8 @@ import {
   porMes
 } from '../../js/nucleo/agregar.js';
 import { preparar } from '../../js/nucleo/preparar.js';
-import { COMPETENCIA, MOTIVOS_NAO_GASTO } from '../../js/nucleo/constantes.js';
+import { ABAS_PLANILHA, COMPETENCIA, MOTIVOS_NAO_GASTO, TEMAS } from '../../js/nucleo/constantes.js';
+import { telaPainel } from '../../js/ui/painel.js';
 
 function gasto(descricao, valor, data, campos = {}) {
   return {
@@ -35,6 +36,31 @@ const conjunto = [
   gasto('PAG FATURA', '-900,00', '28/09/2026', { naoGasto: MOTIVOS_NAO_GASTO.PAGAMENTO_FATURA }),
   gasto('MERCADO C', '-150,00', '05/08/2026', { categoria: 'Mercado' })
 ];
+
+function estadoCom(lancamentos, mes = '') {
+  return {
+    tela: 'painel',
+    aba: ABAS_PLANILHA.TODOS,
+    tema: TEMAS.SISTEMA,
+    competencia: COMPETENCIA.COMPRA,
+    filtros: { mes, banco: '', categoria: '', tag: '', busca: '' },
+    ordenacao: { campo: 'data', ascendente: false },
+    selecao: [],
+    sugestao: null,
+    lancamentos,
+    regras: [],
+    categorias: ['Mercado', 'Transporte', 'Outros'],
+    tags: [],
+    identidade: { nomes: [], documentos: [], contas: [] }
+  };
+}
+
+function barrasDaEvolucao(estado) {
+  return telaPainel(estado).querySelectorAll('.barras .barra-mes').length;
+}
+
+const TODO_O_PERIODO = '';
+const SEM_DESTINO = null;
 
 descrever('Métricas do painel', () => {
   isso('soma apenas os gastos de verdade', () => {
@@ -108,8 +134,85 @@ descrever('Agregações do painel', () => {
   isso('navega para o mes anterior e seguinte', () => {
     const meses = ['2026-08', '2026-09'];
     esperar(mesAnterior(meses, '2026-09')).igual('2026-08');
-    esperar(mesSeguinte(meses, '2026-09')).igual('');
-    esperar(mesAnterior(meses, '2026-08')).igual('');
+    esperar(mesSeguinte(meses, '2026-08')).igual('2026-09');
+  });
+
+  isso('do mes mais recente, avancar abre o periodo inteiro', () => {
+    esperar(mesSeguinte(['2026-08', '2026-09'], '2026-09')).igual(TODO_O_PERIODO);
+  });
+
+  isso('do periodo inteiro, voltar cai no mes mais recente', () => {
+    esperar(mesAnterior(['2026-08', '2026-09'], TODO_O_PERIODO)).igual('2026-09');
+  });
+
+  isso('o periodo inteiro nao e beco sem saida', () => {
+    const meses = ['2026-07', '2026-08', '2026-09'];
+    const volta = mesAnterior(meses, TODO_O_PERIODO);
+
+    esperar(volta).diferenteDe(SEM_DESTINO);
+    esperar(meses.includes(volta)).verdadeiro();
+  });
+
+  isso('do mes mais antigo nao ha para onde voltar', () => {
+    esperar(mesAnterior(['2026-08', '2026-09'], '2026-08')).igual(SEM_DESTINO);
+  });
+
+  isso('do periodo inteiro nao ha para onde avancar', () => {
+    esperar(mesSeguinte(['2026-08', '2026-09'], TODO_O_PERIODO)).igual(SEM_DESTINO);
+  });
+
+  isso('com um mes so, o mes e o periodo inteiro se alcancam', () => {
+    const meses = ['2026-09'];
+    esperar(mesSeguinte(meses, '2026-09')).igual(TODO_O_PERIODO);
+    esperar(mesAnterior(meses, TODO_O_PERIODO)).igual('2026-09');
+  });
+
+  isso('percorrer de ponta a ponta passa por todas as posicoes, sem repetir', () => {
+    const meses = ['2026-07', '2026-08', '2026-09'];
+    const caminho = [meses[0]];
+    let atual = meses[0];
+
+    while (mesSeguinte(meses, atual) !== SEM_DESTINO) {
+      atual = mesSeguinte(meses, atual);
+      caminho.push(atual);
+    }
+
+    esperar(caminho).igual(['2026-07', '2026-08', '2026-09', TODO_O_PERIODO]);
+  });
+
+  isso('e o caminho de volta refaz o mesmo trajeto', () => {
+    const meses = ['2026-07', '2026-08', '2026-09'];
+    const caminho = [TODO_O_PERIODO];
+    let atual = TODO_O_PERIODO;
+
+    while (mesAnterior(meses, atual) !== SEM_DESTINO) {
+      atual = mesAnterior(meses, atual);
+      caminho.push(atual);
+    }
+
+    esperar(caminho).igual([TODO_O_PERIODO, '2026-09', '2026-08', '2026-07']);
+  });
+
+  isso('mes que nao existe na lista nao leva a lugar nenhum', () => {
+    esperar(mesAnterior(['2026-08'], '2025-01')).igual(SEM_DESTINO);
+    esperar(mesSeguinte(['2026-08'], '2025-01')).igual(SEM_DESTINO);
+  });
+
+  isso('o grafico de evolucao aparece com um mes so importado', () => {
+    const umMes = conjunto.filter((lancamento) => lancamento.data.startsWith('2026-09'));
+
+    esperar(porMes(umMes, COMPETENCIA.COMPRA).length).igual(1);
+    esperar(barrasDaEvolucao(estadoCom(umMes))).igual(1);
+  });
+
+  isso('o grafico de evolucao continua aparecendo com varios meses', () => {
+    esperar(barrasDaEvolucao(estadoCom(conjunto))).igual(2);
+  });
+
+  isso('com um mes so, o painel nao esconde o bloco de evolucao', () => {
+    const umMes = conjunto.filter((lancamento) => lancamento.data.startsWith('2026-09'));
+
+    esperar(telaPainel(estadoCom(umMes)).textContent).contem('Últimos meses');
   });
 
   isso('agrupa os maiores comerciantes', () => {

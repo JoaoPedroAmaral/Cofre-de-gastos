@@ -3,7 +3,10 @@ import { mesDe } from './datas.js';
 import { dataDeCompetencia } from './modelo.js';
 import { ehEntrada, ehGasto, estaForaDoTotal } from './naoGasto.js';
 
-const TEXTO_VAZIO = '';
+export const TODO_O_PERIODO = '';
+export const SEM_DESTINO = null;
+const PRIMEIRA_POSICAO = 0;
+const FORA_DA_SEQUENCIA = -1;
 const LIMITE_COMERCIANTES = 10;
 
 export function metricas(lancamentos) {
@@ -83,13 +86,25 @@ export function mesesDisponiveis(lancamentos, competencia) {
 }
 
 export function mesAnterior(meses, mes) {
-  const posicao = meses.indexOf(mes);
-  return posicao > 0 ? meses[posicao - 1] : TEXTO_VAZIO;
+  const posicao = posicaoNaSequencia(meses, mes);
+  if (posicao <= PRIMEIRA_POSICAO) {
+    return SEM_DESTINO;
+  }
+  return meses[posicao - 1];
 }
 
 export function mesSeguinte(meses, mes) {
-  const posicao = meses.indexOf(mes);
-  return posicao !== -1 && posicao < meses.length - 1 ? meses[posicao + 1] : TEXTO_VAZIO;
+  const posicao = posicaoNaSequencia(meses, mes);
+  if (posicao === FORA_DA_SEQUENCIA || posicao >= meses.length) {
+    return SEM_DESTINO;
+  }
+
+  const proximo = posicao + 1;
+  return proximo === meses.length ? TODO_O_PERIODO : meses[proximo];
+}
+
+function posicaoNaSequencia(meses, mes) {
+  return mes === TODO_O_PERIODO ? meses.length : meses.indexOf(mes);
 }
 
 function somar(lancamentos) {

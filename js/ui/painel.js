@@ -13,7 +13,6 @@ import { anelCategorias, barrasMensais } from './graficos.js';
 import { formatarMesCurto, formatarMesLongo, formatarMoeda, formatarPercentual } from './formato.js';
 import { navegacaoDeMes } from './filtros.js';
 
-const MINIMO_PARA_EVOLUCAO = 2;
 const TOTAL_DE_SERIES = 8;
 const PERCENTUAL_CHEIO = 100;
 const CATEGORIAS_VISIVEIS = 4;
@@ -201,10 +200,6 @@ function linhaCategoria(fatia, maior, indice) {
 function blocoEvolucao(estado) {
   const todos = aplicar(estado.lancamentos, { ...estado.filtros, mes: TEXTO_VAZIO }, estado.competencia);
   const meses = porMes(todos, estado.competencia);
-
-  if (meses.length < MINIMO_PARA_EVOLUCAO) {
-    return criarElemento('div');
-  }
 
   return criarElemento('div', { class: 'bloco' }, [
     criarElemento('h2', { texto: TEXTOS.EVOLUCAO }),

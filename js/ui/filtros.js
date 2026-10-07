@@ -1,7 +1,7 @@
 import { ACOES } from '../nucleo/constantes.js';
 import { despachar } from '../estado/store.js';
 import { bancosDe, tagsDe } from '../nucleo/filtrar.js';
-import { mesAnterior, mesSeguinte } from '../nucleo/agregar.js';
+import { SEM_DESTINO, mesAnterior, mesSeguinte } from '../nucleo/agregar.js';
 import { criarElemento } from './componentes.js';
 import { icone } from './icones.js';
 import { formatarMesLongo } from './formato.js';
@@ -54,7 +54,7 @@ function botaoMes(rotulo, direcao, destino) {
     [icone(direcao === 'anterior' ? 'anterior' : 'proximo', 18)]
   );
 
-  if (!destino) {
+  if (destino === SEM_DESTINO) {
     botao.disabled = true;
   }
 
