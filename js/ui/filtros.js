@@ -7,6 +7,7 @@ import { icone } from './icones.js';
 import { formatarMesLongo } from './formato.js';
 
 const TEXTO_VAZIO = '';
+const ID_DA_BUSCA = 'busca-planilha';
 
 const TEXTOS = Object.freeze({
   ANTERIOR: 'Mês anterior',
@@ -62,6 +63,7 @@ function botaoMes(rotulo, direcao, destino) {
 
 export function filtrosDaPlanilha(estado) {
   const busca = criarElemento('input', {
+    id: ID_DA_BUSCA,
     type: 'search',
     'aria-label': TEXTOS.BUSCAR,
     placeholder: TEXTOS.BUSCAR,

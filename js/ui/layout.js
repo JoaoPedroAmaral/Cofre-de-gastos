@@ -11,6 +11,7 @@ import { despachar, observar, obter } from '../estado/store.js';
 import { criarElemento } from './componentes.js';
 import { icone, marca } from './icones.js';
 import { lerTema, salvarTema } from './preferencias.js';
+import { preservarFoco } from './foco.js';
 import { travar } from '../cofre/sessao.js';
 
 const NOME_SISTEMA = 'Gastos Controller';
@@ -18,13 +19,16 @@ const ROTULO_TRAVAR = 'Travar';
 const ROTULO_TEMA = 'Tema';
 const DESCRICAO_TRAVAR = 'Trancar o cofre agora. Ele tranca sozinho depois de um tempo parado';
 const CONSULTA_CLARO = '(prefers-color-scheme: light)';
+const TEXTO_VAZIO = '';
 
 const telas = new Map();
 
 let cancelarObservacao = null;
+let telaDesenhada = null;
 
 export function registrarTela(id, renderizar) {
-  telas.set(id, renderizar);
+  const definicao = typeof renderizar === 'function' ? { montar: renderizar } : renderizar;
+  telas.set(id, definicao);
 }
 
 export function montarLayout(raiz) {
@@ -90,6 +94,7 @@ export function montarLayout(raiz) {
   raiz.replaceChildren(navegacao, conteudo);
   raiz.classList.add('app');
 
+  telaDesenhada = null;
   cancelarObservacao = observar(() => atualizar(conteudo, navegacao, botaoTema));
   atualizar(conteudo, navegacao, botaoTema);
 }
@@ -118,8 +123,26 @@ function atualizar(conteudo, navegacao, botaoTema) {
     item.removeAttribute('aria-current');
   });
 
-  const renderizar = telas.get(estado.tela);
-  conteudo.replaceChildren(renderizar ? renderizar(estado) : document.createTextNode(''));
+  preservarFoco(() => desenharTela(conteudo, estado));
+}
+
+function desenharTela(conteudo, estado) {
+  const definicao = telas.get(estado.tela);
+  if (!definicao) {
+    conteudo.replaceChildren(document.createTextNode(TEXTO_VAZIO));
+    telaDesenhada = null;
+    return;
+  }
+
+  const desenhada = conteudo.firstElementChild;
+  const podeAtualizar = telaDesenhada === estado.tela && Boolean(definicao.atualizar) && Boolean(desenhada);
+  if (podeAtualizar) {
+    definicao.atualizar(desenhada, estado);
+    return;
+  }
+
+  conteudo.replaceChildren(definicao.montar(estado));
+  telaDesenhada = estado.tela;
 }
 
 function alternarTema() {

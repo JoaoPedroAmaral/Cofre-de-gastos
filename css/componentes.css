@@ -2054,3 +2054,9 @@ select.etiqueta.etiqueta--vazia {
   font-size: var(--texto-sm);
   overflow-wrap: anywhere;
 }
+
+.planilha__topo,
+.planilha__lista,
+.planilha__selecao {
+  display: contents;
+}

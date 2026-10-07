@@ -3,7 +3,7 @@ import { despachar, observar, obter } from './estado/store.js';
 import { aplicarTemaSalvo, montarLayout, registrarTela } from './ui/layout.js';
 import { avisar } from './ui/componentes.js';
 import { telaImportar } from './ui/upload.js';
-import { telaPlanilha } from './ui/planilha.js';
+import { atualizarPlanilha, telaPlanilha } from './ui/planilha.js';
 import { telaRegras } from './ui/regras.js';
 import { telaPainel } from './ui/painel.js';
 import { telaExportar } from './ui/exportar.js';
@@ -37,7 +37,7 @@ async function iniciar() {
   }
 
   registrarTela(TELAS.IMPORTAR, telaImportar);
-  registrarTela(TELAS.PLANILHA, telaPlanilha);
+  registrarTela(TELAS.PLANILHA, { montar: telaPlanilha, atualizar: atualizarPlanilha });
   registrarTela(TELAS.REGRAS, telaRegras);
   registrarTela(TELAS.PAINEL, telaPainel);
   registrarTela(TELAS.EXPORTAR, telaExportar);

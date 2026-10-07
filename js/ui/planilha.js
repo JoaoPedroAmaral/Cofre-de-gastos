@@ -16,6 +16,8 @@ import { existe } from '../nucleo/catalogo.js';
 import { ordenarLancamentos } from '../nucleo/ordenar.js';
 import { acrescentarEmLote, celulaDeTags } from './tags.js';
 import { faixaDeSugestao } from './sugestoes.js';
+import { reconciliarLista } from './reconciliar.js';
+import { tagsDe } from '../nucleo/tags.js';
 import { filtrosDaPlanilha, navegacaoDeMes } from './filtros.js';
 import { aplicar } from '../nucleo/filtrar.js';
 import { mesesDisponiveis } from '../nucleo/agregar.js';
@@ -26,6 +28,9 @@ const INDICADORES = Object.freeze({ ASCENDENTE: '▲', DESCENDENTE: '▼' });
 const SEPARADOR_DETALHE = ' · ';
 const COLUNA_DE_SELECAO = 1;
 const OPCAO_NOVA_CATEGORIA = 'nova-categoria';
+const SEPARADOR_DE_ASSINATURA = '~';
+const PREFIXO_DA_LINHA = 'l';
+const PREFIXO_DA_SUGESTAO = 's';
 const COLUNAS_DA_TABELA = COLUNAS_PLANILHA.length + COLUNA_DE_SELECAO;
 
 const TEXTOS = Object.freeze({
@@ -56,25 +61,47 @@ const TEXTOS = Object.freeze({
 });
 
 export function telaPlanilha(estado) {
+  const raiz = criarElemento('div', { class: 'tela' }, [
+    criarElemento('div', { class: 'planilha__topo' }),
+    criarElemento('div', { class: 'planilha__lista' }),
+    criarElemento('div', { class: 'planilha__selecao' })
+  ]);
+
+  atualizarPlanilha(raiz, estado);
+  return raiz;
+}
+
+export function atualizarPlanilha(raiz, estado) {
+  const topo = raiz.querySelector('.planilha__topo');
+  const lista = raiz.querySelector('.planilha__lista');
+  const selecao = raiz.querySelector('.planilha__selecao');
+
   if (estado.lancamentos.length === 0) {
-    return vazioInicial();
+    topo.replaceChildren();
+    lista.replaceChildren(vazioInicial());
+    selecao.replaceChildren();
+    return;
   }
 
   const noPeriodo = aplicar(estado.lancamentos, estado.filtros, estado.competencia);
   const visiveis = ordenarLancamentos(filtrarPorAba(noPeriodo, estado.aba), estado.ordenacao);
 
-  return criarElemento('div', { class: 'tela' }, [
+  topo.replaceChildren(
     navegacaoDeMes(estado, mesesDisponiveis(estado.lancamentos, estado.competencia)),
     criarElemento('div', { class: 'titulo-tela' }, [
       criarElemento('h1', { texto: TEXTOS.TITULO }),
       criarElemento('p', { class: 'titulo-tela__texto', texto: resumo(noPeriodo) })
     ]),
-    barraDeAbas(estado, noPeriodo),
-    visiveis.length === 0
-      ? estadoVazio({ titulo: TEXTOS.SEM_RESULTADO, texto: TEXTOS.SEM_RESULTADO_TEXTO })
-      : tabela(visiveis, estado),
-    estado.selecao.length === 0 ? criarElemento('div') : barraDeSelecao(estado)
-  ]);
+    barraDeAbas(estado, noPeriodo)
+  );
+
+  if (visiveis.length === 0) {
+    lista.replaceChildren(estadoVazio({ titulo: TEXTOS.SEM_RESULTADO, texto: TEXTOS.SEM_RESULTADO_TEXTO }));
+  } else {
+    atualizarTabela(lista, visiveis, estado);
+  }
+
+  selecao.replaceChildren(estado.selecao.length === 0 ? criarElemento('div') : barraDeSelecao(estado));
 }
 
 function vazioInicial() {
@@ -138,17 +165,64 @@ function filtrarPorAba(lancamentos, aba) {
   return lancamentos;
 }
 
-function tabela(lancamentos, estado) {
-  const corpo = criarElemento('tbody', {});
+function atualizarTabela(lista, lancamentos, estado) {
+  const tabela = lista.querySelector('.tabela') ?? lista.appendChild(montarTabela());
 
-  lancamentos.forEach((lancamento) => {
-    corpo.append(linha(lancamento, estado));
-    if (estado.sugestao && estado.sugestao.id === lancamento.id) {
-      corpo.append(faixaDeSugestao(estado, COLUNAS_DA_TABELA));
-    }
+  tabela.querySelector('thead').replaceWith(cabecalho(estado, lancamentos));
+  reconciliarLista(tabela.querySelector('tbody'), itensDaTabela(lancamentos, estado), {
+    chaveDe: (item) => item.chave,
+    assinaturaDe: (item) => item.assinatura,
+    montar: (item) => item.montar()
   });
+}
 
-  return criarElemento('table', { class: 'tabela' }, [cabecalho(estado, lancamentos), corpo]);
+function montarTabela() {
+  return criarElemento('table', { class: 'tabela' }, [
+    criarElemento('thead'),
+    criarElemento('tbody')
+  ]);
+}
+
+function itensDaTabela(lancamentos, estado) {
+  const catalogo = assinaturaDoCatalogo(estado);
+  const selecionados = new Set(estado.selecao);
+
+  return lancamentos.flatMap((lancamento) => {
+    const linhaDoLancamento = {
+      chave: `${PREFIXO_DA_LINHA}:${lancamento.id}`,
+      assinatura: assinaturaDaLinha(lancamento, selecionados, catalogo),
+      montar: () => linha(lancamento, estado)
+    };
+
+    if (!estado.sugestao || estado.sugestao.id !== lancamento.id) {
+      return [linhaDoLancamento];
+    }
+
+    return [
+      linhaDoLancamento,
+      {
+        chave: `${PREFIXO_DA_SUGESTAO}:${lancamento.id}`,
+        assinatura: JSON.stringify(estado.sugestao),
+        montar: () => faixaDeSugestao(estado, COLUNAS_DA_TABELA)
+      }
+    ];
+  });
+}
+
+function assinaturaDoCatalogo(estado) {
+  return [estado.categorias.join(), estado.tags.join()].join(SEPARADOR_DE_ASSINATURA);
+}
+
+function assinaturaDaLinha(lancamento, selecionados, catalogo) {
+  return [
+    lancamento.categoria,
+    lancamento.revisadoManual,
+    lancamento.naoGasto,
+    lancamento.foraDoTotalManual,
+    tagsDe(lancamento).join(),
+    selecionados.has(lancamento.id),
+    catalogo
+  ].join(SEPARADOR_DE_ASSINATURA);
 }
 
 function cabecalho(estado, lancamentos) {

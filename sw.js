@@ -1,4 +1,4 @@
-const VERSAO = 'v9';
+const VERSAO = 'v10';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const METODO_LIDO = 'GET';
@@ -81,6 +81,7 @@ const ESSENCIAIS = [
   '/js/ui/dialogos.js',
   '/js/ui/exportar.js',
   '/js/ui/filtros.js',
+  '/js/ui/foco.js',
   '/js/ui/formato.js',
   '/js/ui/graficos.js',
   '/js/ui/icones.js',
@@ -90,6 +91,7 @@ const ESSENCIAIS = [
   '/js/ui/planilha.js',
   '/js/ui/preferencias.js',
   '/js/ui/privacidade.js',
+  '/js/ui/reconciliar.js',
   '/js/ui/regras.js',
   '/js/ui/tags.js',
   '/js/ui/sugestoes.js',
