@@ -1,4 +1,4 @@
-const VERSAO = 'v14';
+const VERSAO = 'v15';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const RAIZ = '/';
@@ -143,26 +143,64 @@ function ehImutavel(pedido) {
   return PASTAS_IMUTAVEIS.some((pasta) => caminho.startsWith(pasta));
 }
 
+async function abrirCache() {
+  try {
+    return await caches.open(NOME_DO_CACHE);
+  } catch {
+    return null;
+  }
+}
+
+async function procurarNoCache(cache, pedido) {
+  if (!cache) {
+    return null;
+  }
+  try {
+    return (await cache.match(pedido)) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function guardarNoCache(cache, chave, resposta) {
+  if (!cache) {
+    return;
+  }
+  try {
+    await cache.put(chave, resposta);
+  } catch {
+    return;
+  }
+}
+
 async function guardarEssenciais() {
-  const cache = await caches.open(NOME_DO_CACHE);
+  const cache = await abrirCache();
+  if (!cache) {
+    return;
+  }
   await Promise.all(ESSENCIAIS.map((caminho) => cache.add(caminho).catch(() => null)));
 }
 
 async function limparAntigos() {
-  const nomes = await caches.keys();
-  await Promise.all(nomes.filter((nome) => nome !== NOME_DO_CACHE).map((nome) => caches.delete(nome)));
+  try {
+    const nomes = await caches.keys();
+    await Promise.all(nomes.filter((nome) => nome !== NOME_DO_CACHE).map((nome) => caches.delete(nome)));
+  } catch {
+    return;
+  }
 }
 
 async function responderNavegacao(pedido) {
-  const cache = await caches.open(NOME_DO_CACHE);
+  const cache = await abrirCache();
+
   try {
     const resposta = await fetch(pedido);
     if (ehAPaginaDoApp(pedido)) {
-      await cache.put(PAGINA, resposta.clone());
+      await guardarNoCache(cache, PAGINA, resposta.clone());
     }
     return resposta;
   } catch {
-    const guardada = (await cache.match(pedido)) ?? (await cache.match(PAGINA));
+    const guardada = (await procurarNoCache(cache, pedido)) ?? (await procurarNoCache(cache, PAGINA));
     return guardada || Response.error();
   }
 }
@@ -173,8 +211,7 @@ function ehAPaginaDoApp(pedido) {
 }
 
 async function responderDoCache(pedido, revalidacao) {
-  const cache = await caches.open(NOME_DO_CACHE);
-  const guardada = await cache.match(pedido);
+  const guardada = await procurarNoCache(await abrirCache(), pedido);
   if (guardada) {
     return guardada;
   }
@@ -189,17 +226,15 @@ async function responderDaRede(pedido) {
     return atualizada;
   }
 
-  const cache = await caches.open(NOME_DO_CACHE);
-  const guardada = await cache.match(pedido);
+  const guardada = await procurarNoCache(await abrirCache(), pedido);
   return guardada || Response.error();
 }
 
 async function revalidar(pedido) {
   try {
-    const cache = await caches.open(NOME_DO_CACHE);
     const resposta = await fetch(pedido);
     if (resposta.ok) {
-      await cache.put(pedido, resposta.clone());
+      await guardarNoCache(await abrirCache(), pedido, resposta.clone());
     }
     return resposta;
   } catch {
