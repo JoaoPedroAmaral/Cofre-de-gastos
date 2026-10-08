@@ -37,7 +37,8 @@ const TEXTOS = Object.freeze({
   REVISAR: 'Revisar',
   OUTRAS: 'Outras categorias',
   SEM_GASTO: 'Nenhum gasto neste mês',
-  VER_QUAIS: 'Ver quais'
+  VER_QUAIS: 'Ver quais',
+  VER_LANCAMENTOS: 'Ver na planilha os lançamentos de'
 });
 
 const COM_ANIMACAO = true;
@@ -71,7 +72,7 @@ function montarPainel(estado, comAnimacao) {
       ])
     ]),
     criarElemento('section', { class: 'painel-baixo' }, [
-      blocoCategorias(categorias),
+      blocoCategorias(categorias, estado),
       criarElemento('div', { class: 'coluna' }, [
         blocoEvolucao(estado),
         blocoComerciantes(porComerciante(visiveis, COMERCIANTES_VISIVEIS))
@@ -143,10 +144,7 @@ function avisoSemCategoria(resumo) {
     {
       class: 'faixa-destaque faixa-destaque--acao',
       type: 'button',
-      onClick: () => {
-        despachar(ACOES.DEFINIR_ABA, ABAS_PLANILHA.SEM_CATEGORIA);
-        despachar(ACOES.TROCAR_TELA, TELAS.PLANILHA);
-      }
+      onClick: () => despachar(ACOES.IR_PARA_PLANILHA, { aba: ABAS_PLANILHA.SEM_CATEGORIA })
     },
     [
       criarElemento('span', { class: 'ponto' }),
@@ -174,20 +172,21 @@ function centroDoAnel(categorias) {
   ];
 }
 
-function blocoCategorias(categorias) {
+function blocoCategorias(categorias, estado) {
   const visiveis = categorias.slice(0, CATEGORIAS_VISIVEIS);
   const restantes = categorias.slice(CATEGORIAS_VISIVEIS);
 
-  const linhas = visiveis.map((fatia, indice) => linhaCategoria(fatia, categorias[0].total, indice));
+  const linhas = visiveis.map((fatia, indice) =>
+    linhaCategoria(fatia, categorias[0].total, indice, estado)
+  );
 
   if (restantes.length > 0) {
     const total = restantes.reduce((soma, fatia) => soma + fatia.total, 0);
     const participacao = restantes.reduce((soma, fatia) => soma + fatia.participacao, 0);
     linhas.push(
-      linhaCategoria(
+      linhaDeOutras(
         { categoria: `${TEXTOS.OUTRAS} (${restantes.length})`, total, participacao },
-        categorias[0].total,
-        CATEGORIAS_VISIVEIS
+        categorias[0].total
       )
     );
   }
@@ -199,24 +198,48 @@ function blocoCategorias(categorias) {
         class: 'botao botao--discreto',
         type: 'button',
         texto: TEXTOS.VER_TODAS,
-        onClick: () => despachar(ACOES.TROCAR_TELA, TELAS.PLANILHA)
+        onClick: () => despachar(ACOES.IR_PARA_PLANILHA, { filtros: { categoria: TEXTO_VAZIO } })
       })
     ]),
     ...linhas
   ]);
 }
 
-function linhaCategoria(fatia, maior, indice) {
+function linhaCategoria(fatia, maior, indice, estado) {
+  const filtrada = estado.filtros.categoria === fatia.categoria;
+
+  return criarElemento(
+    'button',
+    {
+      class: 'categoria',
+      type: 'button',
+      'aria-pressed': String(filtrada),
+      title: `${TEXTOS.VER_LANCAMENTOS} ${fatia.categoria}`,
+      onClick: () => despachar(ACOES.IR_PARA_PLANILHA, { filtros: { categoria: fatia.categoria } })
+    },
+    conteudoDaCategoria(fatia, maior, indice)
+  );
+}
+
+function conteudoDaCategoria(fatia, maior, indice) {
   const preenchimento = criarElemento('span', { class: 'barra__preenchimento' });
   preenchimento.style.width = `${maior === 0 ? 0 : Math.round((fatia.total / maior) * PERCENTUAL_CHEIO)}%`;
   preenchimento.style.background = `var(--serie-${Math.min(indice + 1, TOTAL_DE_SERIES)})`;
 
-  return criarElemento('div', { class: 'categoria' }, [
+  return [
     criarElemento('span', { class: 'categoria__nome', texto: fatia.categoria }),
     criarElemento('span', { class: 'categoria__valor mono', texto: formatarMoeda(-fatia.total) }),
     criarElemento('span', { class: 'categoria__parte mono fraco', texto: formatarPercentual(fatia.participacao) }),
     criarElemento('span', { class: 'barra' }, [preenchimento])
-  ]);
+  ];
+}
+
+function linhaDeOutras(fatia, maior) {
+  return criarElemento(
+    'div',
+    { class: 'categoria categoria--outras' },
+    conteudoDaCategoria(fatia, maior, CATEGORIAS_VISIVEIS)
+  );
 }
 
 function blocoEvolucao(estado) {
@@ -269,8 +292,7 @@ function rodape(resumo) {
       type: 'button',
       texto: TEXTOS.VER_QUAIS,
       onClick: () => {
-        despachar(ACOES.DEFINIR_ABA, ABAS_PLANILHA.FORA_DO_TOTAL);
-        despachar(ACOES.TROCAR_TELA, TELAS.PLANILHA);
+        despachar(ACOES.IR_PARA_PLANILHA, { aba: ABAS_PLANILHA.FORA_DO_TOTAL });
       }
     })
   ]);

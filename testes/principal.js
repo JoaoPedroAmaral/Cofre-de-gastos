@@ -23,5 +23,6 @@ import './casos/sessao.js';
 import './casos/paginacao.js';
 import './casos/temas.js';
 import './casos/contador.js';
+import './casos/navegacao.js';
 
 executar(document.getElementById('relatorio'));

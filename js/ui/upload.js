@@ -37,6 +37,11 @@ const TEXTOS = Object.freeze({
   ARQUIVOS_NA_IMPORTACAO: 'arquivos nesta importação',
   SEM_ARQUIVOS: 'Nenhum arquivo selecionado.',
   VER_PLANILHA: 'Ver na planilha',
+  GUARDADOS: 'lançamentos guardados no total',
+  OUTRO_NAVEGADOR: 'Levar para outro navegador ou computador',
+  OUTRO_NAVEGADOR_COMO:
+    'O cofre vive só neste navegador. Exporte um backup cifrado, abra o sistema no outro aparelho e escolha restaurar de um backup na tela de entrada.',
+  IR_EXPORTAR: 'Exportar backup',
   AGUARDANDO: 'Formato que ainda não conhecemos',
   RECONHECIDO: 'reconhecido como',
   PERIODO_SUPOSTO: 'período pelo nome do arquivo',
@@ -56,10 +61,12 @@ export function telaImportar(estado) {
         criarElemento('p', { class: 'titulo-tela__texto', texto: TEXTOS.SUBTITULO })
       ]),
       areaUpload(),
+      arquivos.length === 0 ? criarElemento('div') : atalhoParaPlanilha(estado),
       criarElemento('p', { class: 'privacidade' }, [
         icone('travar', 16),
         criarElemento('span', { texto: TEXTOS.PRIVACIDADE })
-      ])
+      ]),
+      levarParaOutroNavegador()
     ]),
     arquivos.length === 0 ? criarElemento('div') : relatorio(arquivos, estado)
   ]);
@@ -135,19 +142,41 @@ function relatorio(arquivos, estado) {
         }),
         periodoDaImportacao(arquivos)
       ]),
-      criarElemento('div', { class: 'resumo-importacao__acoes' }, [
-        criarElemento('button', {
-          class: 'botao botao--principal',
-          type: 'button',
-          texto: TEXTOS.VER_PLANILHA,
-          onClick: () => despachar(ACOES.TROCAR_TELA, TELAS.PLANILHA)
-        }),
-        criarElemento('span', {
-          class: 'fraco',
-          texto: `${totalLancamentos} lançamentos guardados no total`
-        })
-      ])
+      criarElemento('p', {
+        class: 'resumo-importacao__guardados fraco',
+        texto: `${totalLancamentos} lançamentos guardados no total`
+      })
     ])
+  ]);
+}
+
+function atalhoParaPlanilha(estado) {
+  return criarElemento('div', { class: 'atalho-importar' }, [
+    criarElemento('button', {
+      class: 'botao botao--principal',
+      type: 'button',
+      texto: TEXTOS.VER_PLANILHA,
+      onClick: () => despachar(ACOES.IR_PARA_PLANILHA, {})
+    }),
+    criarElemento('span', {
+      class: 'fraco',
+      texto: `${estado.lancamentos.length} ${TEXTOS.GUARDADOS}`
+    })
+  ]);
+}
+
+function levarParaOutroNavegador() {
+  return criarElemento('div', { class: 'levar-sistema' }, [
+    criarElemento('div', { class: 'coluna-estreita' }, [
+      criarElemento('strong', { texto: TEXTOS.OUTRO_NAVEGADOR }),
+      criarElemento('span', { class: 'fraco', texto: TEXTOS.OUTRO_NAVEGADOR_COMO })
+    ]),
+    criarElemento('button', {
+      class: 'botao',
+      type: 'button',
+      texto: TEXTOS.IR_EXPORTAR,
+      onClick: () => despachar(ACOES.TROCAR_TELA, TELAS.EXPORTAR)
+    })
   ]);
 }
 

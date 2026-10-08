@@ -76,6 +76,7 @@ export const ACOES = Object.freeze({
   DEFINIR_SELECAO: 'definirSelecao',
   DEFINIR_ABA_REGRAS: 'definirAbaRegras',
   DEFINIR_PAGINA: 'definirPagina',
+  IR_PARA_PLANILHA: 'irParaPlanilha',
   DESCARTAR_SUGESTAO: 'descartarSugestao',
   CRIAR_REGRA: 'criarRegra',
   REMOVER_REGRA: 'removerRegra',

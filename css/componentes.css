@@ -847,6 +847,38 @@
   white-space: nowrap;
 }
 
+.levar-sistema {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  padding: var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  background: var(--cor-superficie);
+  font-size: var(--texto-sm);
+}
+
+.atalho-importar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-4);
+}
+
+.resumo-importacao__guardados {
+  margin-top: var(--espaco-3);
+  font-size: var(--texto-sm);
+}
+
+.coluna-estreita {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .campo-arquivo {
   position: relative;
   display: flex;
@@ -1306,7 +1338,34 @@ select.etiqueta.etiqueta--vazia {
   grid-template-columns: minmax(0, 1fr) 110px 48px;
   gap: var(--espaco-4);
   align-items: center;
+  width: 100%;
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 1px solid transparent;
+  border-radius: var(--raio-sm);
+  background: transparent;
+  color: inherit;
+  text-align: left;
   font-size: var(--texto-md);
+  transition: border-color var(--duracao-rapida) var(--curva),
+    background var(--duracao-rapida) var(--curva), transform var(--duracao-rapida) var(--curva);
+}
+
+button.categoria {
+  cursor: pointer;
+}
+
+button.categoria:hover {
+  border-color: var(--cor-borda);
+  background: var(--cor-superficie-alta);
+}
+
+button.categoria:active {
+  transform: translateY(1px);
+}
+
+button.categoria[aria-pressed='true'] {
+  border-color: var(--cor-marca-borda);
+  background: var(--cor-marca-fundo);
 }
 
 .categoria__nome {
@@ -1316,6 +1375,16 @@ select.etiqueta.etiqueta--vazia {
 .categoria__valor,
 .categoria__parte {
   text-align: right;
+}
+
+.destaque__valor,
+.metrica__valor,
+.categoria__valor,
+.categoria__parte,
+.comerciante__valor,
+.paginacao__posicao,
+.tabela__coluna-valor {
+  font-variant-numeric: tabular-nums;
 }
 
 .barra {
@@ -1338,9 +1407,11 @@ select.etiqueta.etiqueta--vazia {
 .barras {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: var(--espaco-2);
   height: 96px;
 }
+
 
 .barra-mes {
   display: block;
@@ -1389,7 +1460,8 @@ select.etiqueta,
 
 .barras__rotulos {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: var(--espaco-2);
   font-size: var(--texto-xs);
 }
 

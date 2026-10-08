@@ -150,6 +150,8 @@ function reduzir(atual, acao, dados) {
       return definirAbaRegras(atual, dados);
     case ACOES.DEFINIR_PAGINA:
       return definirPagina(atual, dados);
+    case ACOES.IR_PARA_PLANILHA:
+      return irParaPlanilha(atual, dados);
     case ACOES.DESCARTAR_SUGESTAO:
       return atual.sugestao === null ? atual : { ...atual, sugestao: null };
     case ACOES.CRIAR_REGRA:
@@ -477,6 +479,16 @@ function definirAbaRegras(atual, aba) {
     return atual;
   }
   return daPrimeiraPagina({ ...atual, abaRegras: aba }, CONTEXTOS_DE_PAGINA.REGRAS);
+}
+
+function irParaPlanilha(atual, recorte = {}) {
+  const aba = Object.values(ABAS_PLANILHA).includes(recorte.aba) ? recorte.aba : ABAS_PLANILHA.TODOS;
+  const filtros = { ...atual.filtros, ...(recorte.filtros ?? {}) };
+
+  return daPrimeiraPagina(
+    { ...atual, tela: TELAS.PLANILHA, aba, filtros, selecao: [] },
+    CONTEXTOS_DE_PAGINA.PLANILHA
+  );
 }
 
 function daPrimeiraPagina(atual, contexto) {
