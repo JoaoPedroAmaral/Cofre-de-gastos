@@ -1,4 +1,4 @@
-const VERSAO = 'v16';
+const VERSAO = 'v17';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const RAIZ = '/';
@@ -72,6 +72,7 @@ const ESSENCIAIS = [
   '/js/nucleo/modelo.js',
   '/js/nucleo/naoGasto.js',
   '/js/nucleo/normalizar.js',
+  '/js/nucleo/paginar.js',
   '/js/nucleo/ordenar.js',
   '/js/nucleo/palavras.js',
   '/js/nucleo/preparar.js',
@@ -93,6 +94,7 @@ const ESSENCIAIS = [
   '/js/ui/layout.js',
   '/js/ui/mapeador.js',
   '/js/ui/painel.js',
+  '/js/ui/paginacao.js',
   '/js/ui/planilha.js',
   '/js/ui/preferencias.js',
   '/js/ui/privacidade.js',
@@ -104,9 +106,9 @@ const ESSENCIAIS = [
   '/vendor/fontes/geist-mono-variavel.woff2',
   '/vendor/fontes/geist-variavel.woff2',
   '/vendor/fontes/syne-700.woff2',
-  '/icones/icone-192.png',
-  '/icones/icone-32.png',
   '/icones/icone.svg',
+  '/icones/icone-32.png',
+  '/icones/icone-192.png',
   '/icones/icone-512.png',
   '/icones/icone-mascara-512.png',
   '/vendor/fontes.css'

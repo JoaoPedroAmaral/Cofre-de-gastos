@@ -1,4 +1,10 @@
-import { ACOES, NIVEIS_AVISO, TELAS } from '../nucleo/constantes.js';
+import {
+  ACOES,
+  CONTEXTOS_DE_PAGINA,
+  NIVEIS_AVISO,
+  TAMANHO_DE_PAGINA,
+  TELAS
+} from '../nucleo/constantes.js';
 import { despachar, obter } from '../estado/store.js';
 import { mesclar } from '../nucleo/deduplicar.js';
 import { estaForaDoTotal } from '../nucleo/naoGasto.js';
@@ -10,8 +16,12 @@ import { ORIGENS_PERIODO, unirPeriodos } from '../importadores/periodo.js';
 import { formatarPeriodo } from './formato.js';
 import { alvoUpload, icone } from './icones.js';
 import { abrirMapeador } from './mapeador.js';
+import { navegacaoDePaginas } from './paginacao.js';
+import { fatiar } from '../nucleo/paginar.js';
 
 const EXTENSOES_ACEITAS = '.ofx,.csv,.xlsx,.xls,.pdf,.txt';
+const CONTEXTO = CONTEXTOS_DE_PAGINA.IMPORTACAO;
+const TAMANHO_DA_PAGINA = TAMANHO_DE_PAGINA[CONTEXTO];
 const TEXTO_VAZIO = '';
 const LIMITE_PENDENCIAS_VISIVEIS = 8;
 
@@ -24,6 +34,7 @@ const TEXTOS = Object.freeze({
   BOTAO: 'Escolher arquivos',
   PRIVACIDADE: 'Os arquivos são lidos aqui no navegador. Nada é enviado para lugar nenhum.',
   RELATORIO: 'Esta importação',
+  ARQUIVOS_NA_IMPORTACAO: 'arquivos nesta importação',
   SEM_ARQUIVOS: 'Nenhum arquivo selecionado.',
   VER_PLANILHA: 'Ver na planilha',
   AGUARDANDO: 'Formato que ainda não conhecemos',
@@ -50,7 +61,7 @@ export function telaImportar(estado) {
         criarElemento('span', { texto: TEXTOS.PRIVACIDADE })
       ])
     ]),
-    arquivos.length === 0 ? criarElemento('div') : relatorio(arquivos, estado.lancamentos.length)
+    arquivos.length === 0 ? criarElemento('div') : relatorio(arquivos, estado)
   ]);
 }
 
@@ -95,7 +106,8 @@ function areaUpload() {
   return area;
 }
 
-function relatorio(arquivos, totalLancamentos) {
+function relatorio(arquivos, estado) {
+  const totalLancamentos = estado.lancamentos.length;
   const novos = arquivos.reduce((soma, item) => soma + item.quantidade, 0);
   const repetidos = arquivos.reduce((soma, item) => soma + item.ignorados, 0);
   const foraDoTotal = arquivos.reduce((soma, item) => soma + item.foraDoTotal, 0);
@@ -105,7 +117,14 @@ function relatorio(arquivos, totalLancamentos) {
       criarElemento('h2', { texto: TEXTOS.RELATORIO }),
       criarElemento('span', { class: 'fraco', texto: `${arquivos.length} arquivos` })
     ]),
-    ...arquivos.map(linhaArquivo),
+    ...fatiar(arquivos, estado.paginas[CONTEXTO], TAMANHO_DA_PAGINA).map(linhaArquivo),
+    navegacaoDePaginas({
+      contexto: CONTEXTO,
+      pagina: estado.paginas[CONTEXTO],
+      quantidade: arquivos.length,
+      tamanho: TAMANHO_DA_PAGINA,
+      rotuloDoTotal: `${arquivos.length} ${TEXTOS.ARQUIVOS_NA_IMPORTACAO}`
+    }),
     criarElemento('div', { class: 'resumo-importacao' }, [
       criarElemento('p', {}, [
         criarElemento('span', { class: 'mono', texto: String(novos) }),

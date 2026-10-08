@@ -20,5 +20,6 @@ import './casos/cofre.js';
 import './casos/privacidade.js';
 import './casos/render.js';
 import './casos/sessao.js';
+import './casos/paginacao.js';
 
 executar(document.getElementById('relatorio'));

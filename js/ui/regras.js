@@ -2,13 +2,20 @@ import {
   ABAS_REGRAS,
   ACOES,
   CATEGORIA_SEM_CLASSIFICACAO,
+  CONTEXTOS_DE_PAGINA,
   OPERADORES_REGRA,
   ORIGENS_REGRA,
-  ROTULOS_ABA_REGRAS
+  ROTULOS_ABA_REGRAS,
+  TAMANHO_DE_PAGINA
 } from '../nucleo/constantes.js';
 import { despachar } from '../estado/store.js';
 import { ROTULOS_OPERADOR, alcance, contarAcertos, criarRegra, validar } from '../nucleo/regras.js';
 import { criarElemento } from './componentes.js';
+import { navegacaoDePaginas } from './paginacao.js';
+import { fatiar } from '../nucleo/paginar.js';
+
+const CONTEXTO = CONTEXTOS_DE_PAGINA.REGRAS;
+const TAMANHO_DA_PAGINA = TAMANHO_DE_PAGINA[CONTEXTO];
 
 const SOMENTE_LEITURA = 'Regras do dicionário não são editáveis. Crie uma regra sua para ter prioridade sobre elas.';
 
@@ -26,7 +33,8 @@ const TEXTOS = Object.freeze({
   REMOVER: 'Remover',
   SEM_REGRAS: 'Você ainda não criou nenhuma regra. Categorize um lançamento na planilha e o sistema oferece criar a primeira.',
   NUNCA_BATEU: 'Nunca encontrou nenhum lançamento.',
-  LANCAMENTOS: 'lanç.'
+  LANCAMENTOS: 'lanç.',
+  REGRAS_NA_ABA: 'regras nesta aba'
 });
 
 export function telaRegras(estado) {
@@ -40,7 +48,14 @@ export function telaRegras(estado) {
         criarElemento('p', { class: 'titulo-tela__texto', texto: TEXTOS.SUBTITULO })
       ]),
       barraDeAbas(estado),
-      lista(daAba, acertos)
+      lista(fatiar(daAba, estado.paginas[CONTEXTO], TAMANHO_DA_PAGINA), acertos),
+      navegacaoDePaginas({
+        contexto: CONTEXTO,
+        pagina: estado.paginas[CONTEXTO],
+        quantidade: daAba.length,
+        tamanho: TAMANHO_DA_PAGINA,
+        rotuloDoTotal: `${daAba.length} ${TEXTOS.REGRAS_NA_ABA}`
+      })
     ]),
     painelNovaRegra(estado)
   ]);

@@ -3,8 +3,10 @@ import {
   ACOES,
   CATEGORIA_SEM_CLASSIFICACAO,
   COLUNAS_PLANILHA,
+  CONTEXTOS_DE_PAGINA,
   ROTULOS_ABA,
   ROTULOS_METODO,
+  TAMANHO_DE_PAGINA,
   TELAS,
   TIPOS_COLUNA
 } from '../nucleo/constantes.js';
@@ -17,6 +19,8 @@ import { ordenarLancamentos } from '../nucleo/ordenar.js';
 import { acrescentarEmLote, celulaDeTags } from './tags.js';
 import { faixaDeSugestao } from './sugestoes.js';
 import { reconciliarLista } from './reconciliar.js';
+import { navegacaoDePaginas } from './paginacao.js';
+import { fatiar } from '../nucleo/paginar.js';
 import { tagsDe } from '../nucleo/tags.js';
 import { filtrosDaPlanilha, navegacaoDeMes } from './filtros.js';
 import { aplicar } from '../nucleo/filtrar.js';
@@ -32,6 +36,8 @@ const SEPARADOR_DE_ASSINATURA = '~';
 const PREFIXO_DA_LINHA = 'l';
 const PREFIXO_DA_SUGESTAO = 's';
 const COLUNAS_DA_TABELA = COLUNAS_PLANILHA.length + COLUNA_DE_SELECAO;
+const CONTEXTO = CONTEXTOS_DE_PAGINA.PLANILHA;
+const TAMANHO_DA_PAGINA = TAMANHO_DE_PAGINA[CONTEXTO];
 
 const TEXTOS = Object.freeze({
   TITULO: 'Planilha',
@@ -53,6 +59,9 @@ const TEXTOS = Object.freeze({
   AUTOMATICO: 'Voltar ao automático',
   FORA: 'Fora do total',
   SELECIONAR_TUDO: 'Selecionar todos os lançamentos desta lista',
+  NESTA_PAGINA: 'nesta página',
+  UM_LANCAMENTO: '1 lançamento no filtro',
+  VARIOS_LANCAMENTOS: 'lançamentos no filtro',
   LIMPAR_TUDO: 'Tirar a seleção de todos',
   SELECIONADOS: 'selecionados',
   EM_LOTE: 'Categorizar como',
@@ -64,6 +73,7 @@ export function telaPlanilha(estado) {
   const raiz = criarElemento('div', { class: 'tela' }, [
     criarElemento('div', { class: 'planilha__topo' }),
     criarElemento('div', { class: 'planilha__lista' }),
+    criarElemento('div', { class: 'planilha__paginacao' }),
     criarElemento('div', { class: 'planilha__selecao' })
   ]);
 
@@ -74,11 +84,13 @@ export function telaPlanilha(estado) {
 export function atualizarPlanilha(raiz, estado) {
   const topo = raiz.querySelector('.planilha__topo');
   const lista = raiz.querySelector('.planilha__lista');
+  const paginacao = raiz.querySelector('.planilha__paginacao');
   const selecao = raiz.querySelector('.planilha__selecao');
 
   if (estado.lancamentos.length === 0) {
     topo.replaceChildren();
     lista.replaceChildren(vazioInicial());
+    paginacao.replaceChildren();
     selecao.replaceChildren();
     return;
   }
@@ -95,13 +107,46 @@ export function atualizarPlanilha(raiz, estado) {
     barraDeAbas(estado, noPeriodo)
   );
 
+  const paginados = daPagina(visiveis, estado);
+
   if (visiveis.length === 0) {
     lista.replaceChildren(estadoVazio({ titulo: TEXTOS.SEM_RESULTADO, texto: TEXTOS.SEM_RESULTADO_TEXTO }));
   } else {
-    atualizarTabela(lista, visiveis, estado);
+    atualizarTabela(lista, paginados, visiveis, estado);
   }
 
-  selecao.replaceChildren(estado.selecao.length === 0 ? criarElemento('div') : barraDeSelecao(estado));
+  paginacao.replaceChildren(
+    navegacaoDePaginas({
+      contexto: CONTEXTO,
+      pagina: estado.paginas[CONTEXTO],
+      quantidade: visiveis.length,
+      tamanho: TAMANHO_DA_PAGINA,
+      rotuloDoTotal: rotuloDoTotal(visiveis.length)
+    })
+  );
+
+  selecao.replaceChildren(
+    estado.selecao.length === 0 ? criarElemento('div') : barraDeSelecao(estado, paginados)
+  );
+}
+
+function daPagina(visiveis, estado) {
+  return fatiar(visiveis, estado.paginas[CONTEXTO], TAMANHO_DA_PAGINA);
+}
+
+function rotuloDaSelecao(estado, paginados) {
+  const total = estado.selecao.length;
+  const marcados = new Set(estado.selecao);
+  const nestaPagina = paginados.filter((lancamento) => marcados.has(lancamento.id)).length;
+
+  if (nestaPagina === total) {
+    return `${total} ${TEXTOS.SELECIONADOS}`;
+  }
+  return `${total} ${TEXTOS.SELECIONADOS}${SEPARADOR_DETALHE}${nestaPagina} ${TEXTOS.NESTA_PAGINA}`;
+}
+
+function rotuloDoTotal(quantidade) {
+  return quantidade === 1 ? TEXTOS.UM_LANCAMENTO : `${quantidade} ${TEXTOS.VARIOS_LANCAMENTOS}`;
 }
 
 function vazioInicial() {
@@ -165,11 +210,11 @@ function filtrarPorAba(lancamentos, aba) {
   return lancamentos;
 }
 
-function atualizarTabela(lista, lancamentos, estado) {
+function atualizarTabela(lista, paginados, filtrados, estado) {
   const tabela = lista.querySelector('.tabela') ?? lista.appendChild(montarTabela());
 
-  tabela.querySelector('thead').replaceWith(cabecalho(estado, lancamentos));
-  reconciliarLista(tabela.querySelector('tbody'), itensDaTabela(lancamentos, estado), {
+  tabela.querySelector('thead').replaceWith(cabecalho(estado, filtrados));
+  reconciliarLista(tabela.querySelector('tbody'), itensDaTabela(paginados, estado), {
     chaveDe: (item) => item.chave,
     assinaturaDe: (item) => item.assinatura,
     montar: (item) => item.montar()
@@ -401,7 +446,7 @@ function recusarNome(nome, estado) {
   return TEXTO_VAZIO;
 }
 
-function barraDeSelecao(estado) {
+function barraDeSelecao(estado, paginados) {
   const seletor = criarElemento(
     'select',
     {
@@ -421,7 +466,7 @@ function barraDeSelecao(estado) {
   );
 
   return criarElemento('div', { class: 'barra-selecao', role: 'status' }, [
-    criarElemento('span', { texto: `${estado.selecao.length} ${TEXTOS.SELECIONADOS}` }),
+    criarElemento('span', { class: 'barra-selecao__contagem', texto: rotuloDaSelecao(estado, paginados) }),
     seletor,
     acrescentarEmLote(estado.selecao, estado),
     acaoEmLote(estado, TEXTOS.TIRAR, true),

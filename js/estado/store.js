@@ -5,9 +5,11 @@ import {
   CATEGORIAS_PADRAO,
   CATEGORIA_SEM_CLASSIFICACAO,
   COMPETENCIA,
+  CONTEXTOS_DE_PAGINA,
   ESTADOS_COFRE,
   FORMATOS_EXPORTACAO,
   ORIGENS_REGRA,
+  PRIMEIRA_PAGINA,
   TELAS,
   TELA_INICIAL,
   TEMAS,
@@ -43,6 +45,12 @@ const ordenacaoInicial = Object.freeze({
   ascendente: false
 });
 
+const paginasIniciais = Object.freeze({
+  [CONTEXTOS_DE_PAGINA.PLANILHA]: PRIMEIRA_PAGINA,
+  [CONTEXTOS_DE_PAGINA.REGRAS]: PRIMEIRA_PAGINA,
+  [CONTEXTOS_DE_PAGINA.IMPORTACAO]: PRIMEIRA_PAGINA
+});
+
 const estadoInicial = Object.freeze({
   tela: TELA_INICIAL,
   aba: ABAS_PLANILHA.TODOS,
@@ -50,6 +58,7 @@ const estadoInicial = Object.freeze({
   competencia: COMPETENCIA.COMPRA,
   filtros: filtrosIniciais,
   ordenacao: ordenacaoInicial,
+  paginas: paginasIniciais,
   importacao: Object.freeze({ arquivos: [] }),
   abaRegras: ABAS_REGRAS.USUARIO,
   selecao: Object.freeze([]),
@@ -100,9 +109,9 @@ function reduzir(atual, acao, dados) {
     case ACOES.DEFINIR_COMPETENCIA:
       return definirCompetencia(atual, dados);
     case ACOES.DEFINIR_FILTROS:
-      return { ...atual, filtros: { ...atual.filtros, ...dados } };
+      return daPrimeiraPagina({ ...atual, filtros: { ...atual.filtros, ...dados } }, CONTEXTOS_DE_PAGINA.PLANILHA);
     case ACOES.LIMPAR_FILTROS:
-      return { ...atual, filtros: filtrosIniciais };
+      return daPrimeiraPagina({ ...atual, filtros: filtrosIniciais }, CONTEXTOS_DE_PAGINA.PLANILHA);
     case ACOES.REGISTRAR_IMPORTACAO:
       return registrarImportacao(atual, dados);
     case ACOES.DEFINIR_ORDENACAO:
@@ -139,6 +148,8 @@ function reduzir(atual, acao, dados) {
       return definirSelecao(atual, dados);
     case ACOES.DEFINIR_ABA_REGRAS:
       return definirAbaRegras(atual, dados);
+    case ACOES.DEFINIR_PAGINA:
+      return definirPagina(atual, dados);
     case ACOES.DESCARTAR_SUGESTAO:
       return atual.sugestao === null ? atual : { ...atual, sugestao: null };
     case ACOES.CRIAR_REGRA:
@@ -189,6 +200,7 @@ function registrarImportacao(atual, relatorio) {
     lancamentos,
     tags: tagsQueChegaram(atual.tags, recebidos),
     filtros: { ...atual.filtros, mes: mesDaImportacao(atual, recebidos, lancamentos) },
+    paginas: paginasIniciais,
     importacao: { arquivos: mesclarArquivos(atual.importacao.arquivos, relatorio.arquivos || []) }
   };
 }
@@ -464,7 +476,21 @@ function definirAbaRegras(atual, aba) {
   if (!Object.values(ABAS_REGRAS).includes(aba) || aba === atual.abaRegras) {
     return atual;
   }
-  return { ...atual, abaRegras: aba };
+  return daPrimeiraPagina({ ...atual, abaRegras: aba }, CONTEXTOS_DE_PAGINA.REGRAS);
+}
+
+function daPrimeiraPagina(atual, contexto) {
+  return { ...atual, paginas: { ...atual.paginas, [contexto]: PRIMEIRA_PAGINA } };
+}
+
+function definirPagina(atual, { contexto, pagina }) {
+  if (!Object.values(CONTEXTOS_DE_PAGINA).includes(contexto)) {
+    return atual;
+  }
+  if (atual.paginas[contexto] === pagina) {
+    return atual;
+  }
+  return { ...atual, paginas: { ...atual.paginas, [contexto]: pagina } };
 }
 
 function alternarSelecao(atual, id) {
@@ -501,17 +527,17 @@ function mesclarArquivos(atuais, novos) {
 
 function definirOrdenacao(atual, campo) {
   const mesmaColuna = atual.ordenacao.campo === campo;
-  return {
-    ...atual,
-    ordenacao: { campo, ascendente: mesmaColuna ? !atual.ordenacao.ascendente : true }
-  };
+  return daPrimeiraPagina(
+    { ...atual, ordenacao: { campo, ascendente: mesmaColuna ? !atual.ordenacao.ascendente : true } },
+    CONTEXTOS_DE_PAGINA.PLANILHA
+  );
 }
 
 function definirAba(atual, aba) {
   if (!Object.values(ABAS_PLANILHA).includes(aba) || aba === atual.aba) {
     return atual;
   }
-  return { ...atual, aba };
+  return daPrimeiraPagina({ ...atual, aba }, CONTEXTOS_DE_PAGINA.PLANILHA);
 }
 
 function definirForaDoTotal(atual, { ids, fora }) {

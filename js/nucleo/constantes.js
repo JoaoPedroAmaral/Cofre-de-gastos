@@ -71,13 +71,11 @@ export const ACOES = Object.freeze({
   REMOVER_TAG_DO_CATALOGO: 'removerTagDoCatalogo',
   RENOMEAR_CATEGORIA: 'renomearCategoria',
   REMOVER_CATEGORIA: 'removerCategoria',
-  CRIAR_CATEGORIA: 'criarCategoria',
-  RENOMEAR_CATEGORIA: 'renomearCategoria',
-  REMOVER_CATEGORIA: 'removerCategoria',
   ALTERNAR_SELECAO: 'alternarSelecao',
   LIMPAR_SELECAO: 'limparSelecao',
   DEFINIR_SELECAO: 'definirSelecao',
   DEFINIR_ABA_REGRAS: 'definirAbaRegras',
+  DEFINIR_PAGINA: 'definirPagina',
   DESCARTAR_SUGESTAO: 'descartarSugestao',
   CRIAR_REGRA: 'criarRegra',
   REMOVER_REGRA: 'removerRegra',
@@ -240,6 +238,20 @@ export const ESTADOS_COFRE = Object.freeze({
   SEM_COFRE: 'sem_cofre',
   TRAVADO: 'travado',
   ABERTO: 'aberto'
+});
+
+export const PRIMEIRA_PAGINA = 1;
+
+export const CONTEXTOS_DE_PAGINA = Object.freeze({
+  PLANILHA: 'planilha',
+  REGRAS: 'regras',
+  IMPORTACAO: 'importacao'
+});
+
+export const TAMANHO_DE_PAGINA = Object.freeze({
+  [CONTEXTOS_DE_PAGINA.PLANILHA]: 12,
+  [CONTEXTOS_DE_PAGINA.REGRAS]: 12,
+  [CONTEXTOS_DE_PAGINA.IMPORTACAO]: 10
 });
 
 export const LIMITE_DE_PERFIS = 8;

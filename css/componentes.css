@@ -883,7 +883,10 @@ select.etiqueta.etiqueta--vazia {
   bottom: var(--espaco-5);
   align-self: center;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
+  max-width: 100%;
   gap: var(--espaco-3);
   padding: var(--espaco-2) var(--espaco-2) var(--espaco-2) var(--espaco-5);
   border-radius: var(--raio-lg);
@@ -894,6 +897,11 @@ select.etiqueta.etiqueta--vazia {
 
 .barra-selecao .campo__entrada {
   height: 40px;
+}
+
+.barra-selecao__contagem {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .grade-regras {
@@ -2053,6 +2061,28 @@ select.etiqueta.etiqueta--vazia {
 
 .planilha__topo,
 .planilha__lista,
+.planilha__paginacao,
 .planilha__selecao {
   display: contents;
+}
+
+.paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}
+
+.paginacao__controles {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.paginacao__posicao {
+  min-width: 7ch;
+  text-align: center;
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
 }
