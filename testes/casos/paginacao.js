@@ -315,6 +315,24 @@ descrever('O que a paginação não pode distorcer', () => {
     esperar(marcador.indeterminate).verdadeiro();
   });
 
+  isso('um selecionado fala no singular', () => {
+    const estado = comLancamentos(TAMANHO_DA_PLANILHA * 3);
+    despachar(ACOES.DEFINIR_SELECAO, [obter().lancamentos[0].id]);
+
+    const barra = telaPlanilha(obter()).querySelector('.barra-selecao__contagem').textContent;
+
+    esperar(barra).contem('1 selecionado');
+    esperar(barra.includes('1 selecionados')).falso();
+    esperar(estado.lancamentos.length > 1).verdadeiro();
+  });
+
+  isso('mais de um fala no plural', () => {
+    comLancamentos(TAMANHO_DA_PLANILHA * 3);
+    despachar(ACOES.DEFINIR_SELECAO, obter().lancamentos.slice(0, 3).map((l) => l.id));
+
+    esperar(telaPlanilha(obter()).querySelector('.barra-selecao__contagem').textContent).contem('3 selecionados');
+  });
+
   isso('a selecao sobrevive a troca de pagina', () => {
     comLancamentos(TAMANHO_DE_PAGINA[PLANILHA] * 3);
     const primeiros = obter().lancamentos.slice(0, 3).map((lancamento) => lancamento.id);

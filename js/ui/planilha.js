@@ -63,6 +63,7 @@ const TEXTOS = Object.freeze({
   UM_LANCAMENTO: '1 lançamento no filtro',
   VARIOS_LANCAMENTOS: 'lançamentos no filtro',
   LIMPAR_TUDO: 'Tirar a seleção de todos',
+  SELECIONADO: 'selecionado',
   SELECIONADOS: 'selecionados',
   EM_LOTE: 'Categorizar como',
   LIMPAR: 'Limpar seleção',
@@ -138,11 +139,12 @@ function rotuloDaSelecao(estado, paginados) {
   const total = estado.selecao.length;
   const marcados = new Set(estado.selecao);
   const nestaPagina = paginados.filter((lancamento) => marcados.has(lancamento.id)).length;
+  const contagem = `${total} ${total === 1 ? TEXTOS.SELECIONADO : TEXTOS.SELECIONADOS}`;
 
   if (nestaPagina === total) {
-    return `${total} ${TEXTOS.SELECIONADOS}`;
+    return contagem;
   }
-  return `${total} ${TEXTOS.SELECIONADOS}${SEPARADOR_DETALHE}${nestaPagina} ${TEXTOS.NESTA_PAGINA}`;
+  return `${contagem}${SEPARADOR_DETALHE}${nestaPagina} ${TEXTOS.NESTA_PAGINA}`;
 }
 
 function rotuloDoTotal(quantidade) {

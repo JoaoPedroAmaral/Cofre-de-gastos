@@ -215,7 +215,7 @@
 
 .grade-importar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 520px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 34%);
   gap: var(--espaco-8);
   align-items: start;
 }
@@ -445,7 +445,7 @@
 }
 
 .tabela td {
-  padding: 14px 12px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--cor-linha);
   font-size: var(--texto-md);
   vertical-align: middle;
@@ -1082,7 +1082,7 @@ select.etiqueta.etiqueta--vazia {
 
 .grade-regras {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 26%);
   gap: var(--espaco-8);
   align-items: start;
 }
@@ -1929,6 +1929,67 @@ select.etiqueta,
 
   .titulo-tela h1 {
     font-size: var(--texto-xl);
+  }
+
+  .tabela thead {
+    display: none;
+  }
+
+  .tabela,
+  .tabela tbody,
+  .tabela td {
+    display: block;
+  }
+
+  .tabela tbody tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 2px var(--espaco-3);
+    padding: var(--espaco-3) 0;
+    border-bottom: 1px solid var(--cor-linha);
+  }
+
+  .tabela td {
+    padding: 0;
+    border: 0;
+  }
+
+  .tabela tbody tr td:nth-child(1) {
+    grid-row: 1 / span 4;
+    align-self: start;
+  }
+
+  .tabela tbody tr td:nth-child(2) {
+    grid-column: 2;
+    color: var(--cor-texto-fraco);
+    font-size: var(--texto-xs);
+  }
+
+  .tabela tbody tr td:nth-child(3) {
+    grid-column: 2;
+  }
+
+  .tabela tbody tr td:nth-child(4) {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espaco-2);
+  }
+
+  .tabela tbody tr td:nth-child(5) {
+    grid-column: 2;
+  }
+
+  .tabela tbody tr td:nth-child(5):empty {
+    display: none;
+  }
+
+  .tabela tbody tr td:nth-child(6) {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: start;
+    text-align: right;
   }
 
   .filtros,
