@@ -58,7 +58,7 @@ const TEXTOS = Object.freeze({
   TIRAR: 'Tirar do total',
   AUTOMATICO: 'Voltar ao automático',
   FORA: 'Fora do total',
-  SELECIONAR_TUDO: 'Selecionar todos os lançamentos desta lista',
+  SELECIONAR_TUDO: 'Selecionar todos os lançamentos do filtro, não só os desta página',
   NESTA_PAGINA: 'nesta página',
   UM_LANCAMENTO: '1 lançamento no filtro',
   VARIOS_LANCAMENTOS: 'lançamentos no filtro',
@@ -296,6 +296,11 @@ function cabecalho(estado, lancamentos) {
   ]);
 }
 
+function rotuloDoMarcador(quantidade, todosMarcados) {
+  const acao = todosMarcados ? TEXTOS.LIMPAR_TUDO : TEXTOS.SELECIONAR_TUDO;
+  return `${acao} (${quantidade})`;
+}
+
 function marcadorDeTudo(estado, lancamentos) {
   const ids = lancamentos.map((lancamento) => lancamento.id);
   const selecionados = ids.filter((id) => estado.selecao.includes(id));
@@ -303,8 +308,8 @@ function marcadorDeTudo(estado, lancamentos) {
 
   const marcador = criarElemento('input', {
     type: 'checkbox',
-    'aria-label': todos ? TEXTOS.LIMPAR_TUDO : TEXTOS.SELECIONAR_TUDO,
-    title: todos ? TEXTOS.LIMPAR_TUDO : TEXTOS.SELECIONAR_TUDO,
+    'aria-label': rotuloDoMarcador(ids.length, todos),
+    title: rotuloDoMarcador(ids.length, todos),
     disabled: ids.length === 0 ? 'disabled' : null,
     onChange: () => despachar(ACOES.DEFINIR_SELECAO, todos ? [] : ids)
   });

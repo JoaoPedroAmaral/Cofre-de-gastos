@@ -287,6 +287,34 @@ descrever('O que a paginação não pode distorcer', () => {
     esperar(obter().selecao.length).igual(quantidade);
   });
 
+  isso('o marcador do cabecalho anuncia que age sobre o filtro, nao sobre a pagina', () => {
+    const quantidade = TAMANHO_DA_PLANILHA * 3;
+    const estado = comLancamentos(quantidade);
+    const marcador = telaPlanilha(estado).querySelector('thead .tabela__selecao input');
+
+    esperar(marcador.title).contem('filtro');
+    esperar(marcador.title).contem(String(quantidade));
+  });
+
+  isso('marcado tudo, o rotulo passa a ser o de limpar', () => {
+    const quantidade = TAMANHO_DA_PLANILHA * 3;
+    comLancamentos(quantidade);
+    despachar(ACOES.DEFINIR_SELECAO, obter().lancamentos.map((lancamento) => lancamento.id));
+    const marcador = telaPlanilha(obter()).querySelector('thead .tabela__selecao input');
+
+    esperar(marcador.checked).verdadeiro();
+    esperar(marcador.title).contem('Tirar a seleção');
+  });
+
+  isso('selecao parcial deixa o marcador indeterminado', () => {
+    comLancamentos(TAMANHO_DA_PLANILHA * 3);
+    despachar(ACOES.DEFINIR_SELECAO, obter().lancamentos.slice(0, 2).map((lancamento) => lancamento.id));
+    const marcador = telaPlanilha(obter()).querySelector('thead .tabela__selecao input');
+
+    esperar(marcador.checked).falso();
+    esperar(marcador.indeterminate).verdadeiro();
+  });
+
   isso('a selecao sobrevive a troca de pagina', () => {
     comLancamentos(TAMANHO_DE_PAGINA[PLANILHA] * 3);
     const primeiros = obter().lancamentos.slice(0, 3).map((lancamento) => lancamento.id);

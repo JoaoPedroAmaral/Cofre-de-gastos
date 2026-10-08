@@ -1,4 +1,4 @@
-const VERSAO = 'v17';
+const VERSAO = 'v18';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const RAIZ = '/';
