@@ -1,4 +1,4 @@
-const VERSAO = 'v18';
+const VERSAO = 'v19';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const RAIZ = '/';
@@ -101,6 +101,7 @@ const ESSENCIAIS = [
   '/js/ui/reconciliar.js',
   '/js/ui/regras.js',
   '/js/ui/tags.js',
+  '/js/ui/temas.js',
   '/js/ui/sugestoes.js',
   '/js/ui/upload.js',
   '/vendor/fontes/geist-mono-variavel.woff2',

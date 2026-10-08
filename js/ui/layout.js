@@ -1,6 +1,5 @@
 import {
   ACOES,
-  ORDEM_TEMAS,
   ORDEM_TELAS,
   ROTULOS_TELA,
   ROTULOS_TEMA,
@@ -10,7 +9,8 @@ import {
 import { despachar, observar, obter } from '../estado/store.js';
 import { criarElemento } from './componentes.js';
 import { icone, marca } from './icones.js';
-import { lerTema, salvarTema } from './preferencias.js';
+import { lerTema } from './preferencias.js';
+import { abrirMenuDeTemas } from './temas.js';
 import { preservarFoco } from './foco.js';
 import { travar } from '../cofre/sessao.js';
 
@@ -19,6 +19,7 @@ const ROTULO_TRAVAR = 'Travar';
 const ROTULO_TEMA = 'Tema';
 const DESCRICAO_TRAVAR = 'Trancar o cofre agora. Ele tranca sozinho depois de um tempo parado';
 const CONSULTA_CLARO = '(prefers-color-scheme: light)';
+const ICONE_DA_TRILHA = 20;
 const TEXTO_VAZIO = '';
 
 const telas = new Map();
@@ -52,7 +53,7 @@ export function montarLayout(raiz) {
           dataset: { tela: id },
           onClick: () => despachar(ACOES.TROCAR_TELA, id)
         },
-        [icone(id), criarElemento('span', { texto: ROTULOS_TELA[id] })]
+        [icone(id, ICONE_DA_TRILHA), criarElemento('span', { texto: ROTULOS_TELA[id] })]
       )
     );
   });
@@ -65,7 +66,7 @@ export function montarLayout(raiz) {
       dataset: { tela: TELAS.PRIVACIDADE },
       onClick: () => despachar(ACOES.TROCAR_TELA, TELAS.PRIVACIDADE)
     },
-    [icone(TELAS.PRIVACIDADE), criarElemento('span', { texto: ROTULOS_TELA[TELAS.PRIVACIDADE] })]
+    [icone(TELAS.PRIVACIDADE, ICONE_DA_TRILHA), criarElemento('span', { texto: ROTULOS_TELA[TELAS.PRIVACIDADE] })]
   );
 
   const botaoTravar = criarElemento(
@@ -77,7 +78,7 @@ export function montarLayout(raiz) {
       'aria-label': `${ROTULO_TRAVAR}. ${DESCRICAO_TRAVAR}`,
       onClick: travar
     },
-    [icone('travar'), criarElemento('span', { texto: ROTULO_TRAVAR })]
+    [icone('travar', ICONE_DA_TRILHA), criarElemento('span', { texto: ROTULO_TRAVAR })]
   );
 
   const botaoTema = criarElemento(
@@ -85,9 +86,9 @@ export function montarLayout(raiz) {
     {
       class: 'rail__item',
       type: 'button',
-      onClick: alternarTema
+      onClick: abrirMenuDeTemas
     },
-    [icone('tema'), criarElemento('span', { texto: ROTULO_TEMA })]
+    [icone('tema', ICONE_DA_TRILHA), criarElemento('span', { texto: ROTULO_TEMA })]
   );
 
   navegacao.append(botaoPrivacidade, botaoTravar, botaoTema);
@@ -113,7 +114,7 @@ function atualizar(conteudo, navegacao, botaoTema) {
 
   aplicarTema(estado.tema);
   botaoTema.title = ROTULOS_TEMA[estado.tema];
-  botaoTema.setAttribute('aria-label', `Alternar tema. Atual: ${ROTULOS_TEMA[estado.tema]}`);
+  botaoTema.setAttribute('aria-label', `${ROTULO_TEMA}. Em uso: ${ROTULOS_TEMA[estado.tema]}`);
 
   navegacao.querySelectorAll('.rail__item[data-tela]').forEach((item) => {
     if (item.dataset.tela === estado.tela) {
@@ -145,15 +146,9 @@ function desenharTela(conteudo, estado) {
   telaDesenhada = estado.tela;
 }
 
-function alternarTema() {
-  const atual = obter().tema;
-  const proximo = ORDEM_TEMAS[(ORDEM_TEMAS.indexOf(atual) + 1) % ORDEM_TEMAS.length];
-  despachar(ACOES.DEFINIR_TEMA, proximo);
-  salvarTema(proximo);
-}
-
 function aplicarTema(tema) {
-  const resolvido = tema === TEMAS.SISTEMA ? temaDoSistema() : tema;
+  const conhecido = Object.values(TEMAS).includes(tema) ? tema : TEMAS.SISTEMA;
+  const resolvido = conhecido === TEMAS.SISTEMA ? temaDoSistema() : conhecido;
 
   if (resolvido === TEMAS.ESCURO) {
     delete document.documentElement.dataset.tema;

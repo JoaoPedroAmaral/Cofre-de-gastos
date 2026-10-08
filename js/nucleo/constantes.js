@@ -89,16 +89,38 @@ export const ACOES = Object.freeze({
 
 export const TEMAS = Object.freeze({
   SISTEMA: 'sistema',
+  ESCURO: 'escuro',
   CLARO: 'claro',
-  ESCURO: 'escuro'
+  NOITE: 'noite',
+  PAPEL: 'papel',
+  CONTRASTE: 'contraste'
 });
 
-export const ORDEM_TEMAS = Object.freeze([TEMAS.SISTEMA, TEMAS.CLARO, TEMAS.ESCURO]);
+export const ORDEM_TEMAS = Object.freeze([
+  TEMAS.SISTEMA,
+  TEMAS.ESCURO,
+  TEMAS.CLARO,
+  TEMAS.NOITE,
+  TEMAS.PAPEL,
+  TEMAS.CONTRASTE
+]);
 
 export const ROTULOS_TEMA = Object.freeze({
-  [TEMAS.SISTEMA]: 'Tema do sistema',
-  [TEMAS.CLARO]: 'Tema claro',
-  [TEMAS.ESCURO]: 'Tema escuro'
+  [TEMAS.SISTEMA]: 'Seguir o sistema',
+  [TEMAS.ESCURO]: 'Escuro',
+  [TEMAS.CLARO]: 'Claro',
+  [TEMAS.NOITE]: 'Noite fria',
+  [TEMAS.PAPEL]: 'Papel',
+  [TEMAS.CONTRASTE]: 'Alto contraste'
+});
+
+export const DESCRICOES_TEMA = Object.freeze({
+  [TEMAS.SISTEMA]: 'Acompanha o claro ou escuro do seu aparelho',
+  [TEMAS.ESCURO]: 'O padrão do sistema, fundo quase preto',
+  [TEMAS.CLARO]: 'Fundo claro, para ambiente iluminado',
+  [TEMAS.NOITE]: 'Escuro de base azulada, menos quente que o padrão',
+  [TEMAS.PAPEL]: 'Claro de base quente, com menos contraste bruto que o branco',
+  [TEMAS.CONTRASTE]: 'Preto e branco com a marca saturada, para leitura difícil'
 });
 
 export const CHAVE_PREFERENCIA_TEMA = 'gastos.tema';

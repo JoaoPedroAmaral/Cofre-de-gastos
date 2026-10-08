@@ -10,7 +10,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--espaco-1);
+  gap: 0;
   height: 100vh;
   overflow-y: auto;
   padding: var(--espaco-6) 0;
@@ -23,7 +23,7 @@
 }
 
 .rail__marca {
-  margin-bottom: var(--espaco-6);
+  margin-bottom: var(--espaco-4);
   color: var(--cor-marca);
 }
 
@@ -31,9 +31,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   width: 64px;
-  padding: 10px 0;
+  padding: 6px 0;
   border: 0;
   border-radius: 14px;
   background: transparent;
@@ -905,6 +905,77 @@ select.etiqueta.etiqueta--vazia {
   padding: 0 14px;
   border-radius: var(--raio-sm);
   font-size: var(--texto-md);
+}
+
+.temas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.temas__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tema {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'amostra nome atual'
+    'amostra descricao atual';
+  align-items: center;
+  gap: 0 var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  background: transparent;
+  text-align: left;
+  transition: border-color var(--duracao-rapida) var(--curva), background var(--duracao-rapida) var(--curva);
+}
+
+.tema:hover {
+  border-color: var(--cor-borda-forte);
+  background: var(--cor-superficie-alta);
+}
+
+.tema--ativo {
+  border-color: var(--cor-marca-borda);
+  background: var(--cor-marca-fundo);
+}
+
+.tema__amostra {
+  grid-area: amostra;
+  display: flex;
+  overflow: hidden;
+  width: 36px;
+  height: 24px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-sm);
+}
+
+.tema__faixa {
+  flex: 1;
+}
+
+.tema__nome {
+  grid-area: nome;
+  color: var(--cor-texto);
+  font-size: var(--texto-md);
+  font-weight: 500;
+}
+
+.tema__descricao {
+  grid-area: descricao;
+  font-size: var(--texto-sm);
+}
+
+.tema__atual {
+  grid-area: atual;
+  color: var(--cor-marca);
+  font-size: var(--texto-xs);
+  white-space: nowrap;
 }
 
 .barra-selecao__contagem {
