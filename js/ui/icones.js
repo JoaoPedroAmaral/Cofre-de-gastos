@@ -36,6 +36,23 @@ const RETANGULOS = Object.freeze({
   travar: [{ x: 5, y: 11, width: 14, height: 10, rx: 2 }]
 });
 
+const MARCA = Object.freeze({
+  centro: 22,
+  raioDoAnel: 14,
+  larguraDoAnel: 3.5,
+  raioDoMiolo: 5.2,
+  inicioDaTrava: 8.8,
+  fimDaTrava: 11.5,
+  larguraDaTrava: 2.7
+});
+
+const DIRECOES_DAS_TRAVAS = Object.freeze([
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+  [0, -1]
+]);
+
 export function icone(nome, tamanho = 22) {
   const svg = elementoSvg('svg', {
     width: tamanho,
@@ -65,12 +82,36 @@ export function marca(tamanho = 40) {
   });
 
   svg.append(
-    elementoSvg('circle', { cx: 22, cy: 22, r: 19, fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }),
-    elementoSvg('circle', { cx: 22, cy: 22, r: 9, fill: 'currentColor' }),
-    elementoSvg('rect', { x: 21, y: 4, width: 2, height: 9, fill: 'currentColor' })
+    elementoSvg('circle', {
+      cx: MARCA.centro,
+      cy: MARCA.centro,
+      r: MARCA.raioDoAnel,
+      fill: 'none',
+      stroke: 'currentColor',
+      'stroke-width': MARCA.larguraDoAnel
+    }),
+    elementoSvg('circle', {
+      cx: MARCA.centro,
+      cy: MARCA.centro,
+      r: MARCA.raioDoMiolo,
+      fill: 'currentColor'
+    }),
+    ...DIRECOES_DAS_TRAVAS.map(travaDaMarca)
   );
 
   return svg;
+}
+
+function travaDaMarca([direcaoX, direcaoY]) {
+  return elementoSvg('line', {
+    x1: MARCA.centro + MARCA.inicioDaTrava * direcaoX,
+    y1: MARCA.centro + MARCA.inicioDaTrava * direcaoY,
+    x2: MARCA.centro + MARCA.fimDaTrava * direcaoX,
+    y2: MARCA.centro + MARCA.fimDaTrava * direcaoY,
+    stroke: 'currentColor',
+    'stroke-width': MARCA.larguraDaTrava,
+    'stroke-linecap': 'round'
+  });
 }
 
 export function alvoUpload(tamanho = 72) {

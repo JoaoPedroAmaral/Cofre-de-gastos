@@ -1,4 +1,4 @@
-const VERSAO = 'v15';
+const VERSAO = 'v16';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const RAIZ = '/';
@@ -105,6 +105,8 @@ const ESSENCIAIS = [
   '/vendor/fontes/geist-variavel.woff2',
   '/vendor/fontes/syne-700.woff2',
   '/icones/icone-192.png',
+  '/icones/icone-32.png',
+  '/icones/icone.svg',
   '/icones/icone-512.png',
   '/icones/icone-mascara-512.png',
   '/vendor/fontes.css'
