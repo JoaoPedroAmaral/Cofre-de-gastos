@@ -390,6 +390,20 @@ descrever('Trocar de perfil na tela de entrada', () => {
     return tela.querySelector('.perfil--ativo')?.textContent ?? null;
   }
 
+  isso('a ajuda da tela aparece como texto, nunca como objeto estringificado', () => {
+    const tela = montar('p1');
+
+    esperar(tela.textContent.includes('[object')).falso();
+  });
+
+  isso('com mais de um perfil, a ajuda manda escolher o perfil', () => {
+    const tela = montar('p1');
+    const ajuda = tela.querySelector('.cofre__titulo p');
+
+    esperar(ajuda.textContent.length > 0).verdadeiro();
+    esperar(ajuda.textContent).contem('perfil');
+  });
+
   isso('comeca com o perfil escolhido marcado', () => {
     esperar(marcado(montar('p1'))).contem('Pessoal');
   });

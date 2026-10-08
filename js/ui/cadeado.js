@@ -13,7 +13,7 @@ import { codigoCompleto, formatarCodigo } from '../cofre/recuperacao.js';
 import { removerPerfil, salvarPerfil } from '../armazenamento/banco.js';
 import { MENSAGENS_BACKUP, abrirBackup, restaurarMapeamentos } from '../armazenamento/backup.js';
 import { baixar } from '../exportacao/arquivo.js';
-import { avisar, criarElemento } from './componentes.js';
+import { avisar, campoDeArquivo, criarElemento } from './componentes.js';
 import { marca } from './icones.js';
 import { reconciliarLista } from './reconciliar.js';
 
@@ -103,12 +103,10 @@ export function telaCofre(estado, acoes) {
 }
 
 function telaRestauracao(estado, acoes) {
-  const arquivo = criarElemento('input', {
-    class: 'campo__entrada',
+  const arquivo = campoDeArquivo({
     id: 'arquivo-backup',
-    type: 'file',
-    accept: '.json',
-    'aria-label': TEXTOS.ARQUIVO
+    rotulo: TEXTOS.ARQUIVO,
+    aceita: '.json'
   });
 
   const senha = campoSecreto('senha-backup', TEXTOS.SENHA_BACKUP, 'password', 'off');
@@ -118,7 +116,7 @@ function telaRestauracao(estado, acoes) {
     class: 'cofre__formulario',
     onSubmit: async (evento) => {
       evento.preventDefault();
-      const escolhido = arquivo.files[0];
+      const escolhido = arquivo.entrada.files[0];
 
       if (!escolhido) {
         erro.textContent = TEXTOS.SEM_ARQUIVO;
@@ -136,7 +134,10 @@ function telaRestauracao(estado, acoes) {
   });
 
   formulario.append(
-    criarElemento('div', { class: 'campo' }, [rotulado(arquivo, TEXTOS.ARQUIVO)]),
+    criarElemento('div', { class: 'campo' }, [
+      criarElemento('span', { class: 'campo__rotulo', texto: TEXTOS.ARQUIVO }),
+      arquivo.elemento
+    ]),
     criarElemento('div', { class: 'campo' }, [rotulado(senha, TEXTOS.SENHA_BACKUP)]),
     erro,
     criarElemento('button', {
@@ -483,13 +484,20 @@ function mostrarCodigo(novo, nome, acoes, restaurado = null) {
   );
 }
 
+function paragrafoDeAjuda(ajuda) {
+  if (typeof ajuda === 'string') {
+    return criarElemento('p', { class: 'fraco', texto: ajuda });
+  }
+  return ajuda;
+}
+
 function moldura(titulo, ajuda, conteudo) {
   return criarElemento('div', { class: 'cofre' }, [
     criarElemento('div', { class: 'cofre__caixa' }, [
       criarElemento('span', { class: 'cofre__marca' }, [marca(64)]),
       criarElemento('div', { class: 'cofre__titulo' }, [
         criarElemento('h1', { texto: titulo }),
-        criarElemento('p', { class: 'fraco', texto: ajuda })
+        paragrafoDeAjuda(ajuda)
       ]),
       ...conteudo
     ]),

@@ -161,7 +161,7 @@ function painelNovaRegra(estado) {
 
   const operador = criarElemento(
     'select',
-    { class: 'campo__entrada', id: 'operador', onChange: () => atualizar() },
+    { class: 'campo__entrada seletor', id: 'operador', onChange: () => atualizar() },
     Object.values(OPERADORES_REGRA).map((valor) =>
       criarElemento('option', { value: valor, texto: ROTULOS_OPERADOR[valor] })
     )
@@ -176,7 +176,7 @@ function painelNovaRegra(estado) {
 
   const categoria = criarElemento(
     'select',
-    { class: 'campo__entrada', id: 'categoria', onChange: () => atualizar() },
+    { class: 'campo__entrada seletor', id: 'categoria', onChange: () => atualizar() },
     estado.categorias
       .filter((nome) => nome !== CATEGORIA_SEM_CLASSIFICACAO)
       .map((nome) => criarElemento('option', { value: nome, texto: nome }))

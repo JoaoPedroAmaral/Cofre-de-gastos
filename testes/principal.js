@@ -22,5 +22,6 @@ import './casos/render.js';
 import './casos/sessao.js';
 import './casos/paginacao.js';
 import './casos/temas.js';
+import './casos/contador.js';
 
 executar(document.getElementById('relatorio'));

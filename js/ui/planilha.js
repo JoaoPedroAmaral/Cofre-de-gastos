@@ -398,7 +398,7 @@ function seletorCategoria(lancamento, estado) {
   const seletor = criarElemento(
     'select',
     {
-      class: semCategoria ? 'etiqueta etiqueta--vazia' : 'etiqueta',
+      class: semCategoria ? 'etiqueta etiqueta--vazia seletor' : 'etiqueta seletor',
       'aria-label': `Categoria de ${lancamento.descricaoOriginal}`,
       onChange: (evento) => escolher(evento.target, lancamento, estado)
     },
@@ -455,7 +455,7 @@ function barraDeSelecao(estado, paginados) {
   const seletor = criarElemento(
     'select',
     {
-      class: 'campo__entrada',
+      class: 'campo__entrada seletor',
       'aria-label': TEXTOS.EM_LOTE,
       onChange: (evento) => {
         despachar(ACOES.DEFINIR_CATEGORIA, { ids: estado.selecao, categoria: evento.target.value });

@@ -10,6 +10,7 @@ import {
 } from '../nucleo/agregar.js';
 import { criarElemento, estadoVazio } from './componentes.js';
 import { anelCategorias, barrasMensais } from './graficos.js';
+import { animarAte } from './contador.js';
 import { formatarMesCurto, formatarMesLongo, formatarMoeda, formatarPercentual } from './formato.js';
 import { navegacaoDeMes } from './filtros.js';
 
@@ -39,7 +40,18 @@ const TEXTOS = Object.freeze({
   VER_QUAIS: 'Ver quais'
 });
 
+const COM_ANIMACAO = true;
+const SEM_ANIMACAO = false;
+
 export function telaPainel(estado) {
+  return montarPainel(estado, COM_ANIMACAO);
+}
+
+export function atualizarPainel(raiz, estado) {
+  raiz.replaceWith(montarPainel(estado, SEM_ANIMACAO));
+}
+
+function montarPainel(estado, comAnimacao) {
   if (estado.lancamentos.length === 0) {
     return vazio();
   }
@@ -52,7 +64,7 @@ export function telaPainel(estado) {
   return criarElemento('div', { class: 'tela' }, [
     navegacaoDeMes(estado, meses),
     criarElemento('section', { class: 'painel-topo' }, [
-      destaque(estado, resumo),
+      destaque(estado, resumo, comAnimacao),
       criarElemento('div', { class: 'anel' }, [
         anelCategorias(categorias),
         criarElemento('div', { class: 'anel__centro' }, centroDoAnel(categorias))
@@ -82,7 +94,7 @@ function vazio() {
   return tela;
 }
 
-function destaque(estado, resumo) {
+function destaque(estado, resumo, comAnimacao) {
   const periodo = estado.filtros.mes ? formatarMesLongo(estado.filtros.mes).toLowerCase() : 'todo o período';
 
   const sobrou = resumo.saldo >= 0;
@@ -92,10 +104,7 @@ function destaque(estado, resumo) {
       class: 'fraco',
       texto: `${sobrou ? TEXTOS.SALDO_POSITIVO : TEXTOS.SALDO_NEGATIVO} ${periodo}`
     }),
-    criarElemento('span', {
-      class: sobrou ? 'destaque__valor display destaque__valor--entrada' : 'destaque__valor display',
-      texto: formatarMoeda(resumo.saldo)
-    }),
+    valorPrincipal(resumo.saldo, sobrou, comAnimacao),
     criarElemento('div', { class: 'destaque__secundarios' }, [
       metrica(TEXTOS.ENTROU, formatarMoeda(resumo.entradas), true),
       metrica(TEXTOS.SAIU, formatarMoeda(-resumo.gasto)),
@@ -103,6 +112,19 @@ function destaque(estado, resumo) {
     ]),
     resumo.semCategoria > 0 ? avisoSemCategoria(resumo) : null
   ]);
+}
+
+function valorPrincipal(saldo, sobrou, comAnimacao) {
+  const elemento = criarElemento('span', {
+    class: sobrou ? 'destaque__valor display destaque__valor--entrada' : 'destaque__valor display',
+    texto: formatarMoeda(saldo)
+  });
+
+  if (comAnimacao) {
+    animarAte(elemento, saldo, formatarMoeda);
+  }
+
+  return elemento;
 }
 
 function metrica(rotulo, valor, positivo = false) {

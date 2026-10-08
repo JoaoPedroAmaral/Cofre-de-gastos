@@ -97,7 +97,7 @@ function seletor(rotuloVazio, opcoes, escolhido, aoMudar) {
   const campo = criarElemento(
     'select',
     {
-      class: 'botao',
+      class: 'botao seletor',
       'aria-label': rotuloVazio,
       onChange: (evento) => aoMudar(evento.target.value)
     },

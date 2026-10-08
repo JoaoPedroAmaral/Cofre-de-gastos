@@ -847,15 +847,80 @@
   white-space: nowrap;
 }
 
+.campo-arquivo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.campo-arquivo__botao {
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
+.campo-arquivo__nome {
+  min-width: 0;
+  font-size: var(--texto-sm);
+  overflow-wrap: anywhere;
+}
+
+.campo-arquivo__entrada {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.campo-arquivo:hover .campo-arquivo__botao {
+  border-color: var(--cor-borda-forte);
+  color: var(--cor-texto);
+}
+
+.campo-arquivo__entrada:focus-visible + .campo-arquivo__nome {
+  outline: none;
+}
+
+.campo-arquivo:focus-within .campo-arquivo__botao {
+  border-color: var(--cor-foco);
+  outline: 2px solid var(--cor-foco);
+  outline-offset: 2px;
+}
+
+.seletor {
+  appearance: none;
+  padding-right: 34px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 13px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.seletor:hover {
+  border-color: var(--cor-borda-forte);
+}
+
+.seletor:focus-visible {
+  border-color: var(--cor-foco);
+  outline: 2px solid var(--cor-foco);
+  outline-offset: 2px;
+}
+
 select.etiqueta {
   appearance: none;
-  border: 1px solid transparent;
+  border: 1px solid var(--cor-borda);
+  background-color: var(--cor-superficie);
   cursor: pointer;
-  transition: border-color var(--duracao-rapida) var(--curva);
+  transition: border-color var(--duracao-rapida) var(--curva),
+    background-color var(--duracao-rapida) var(--curva);
 }
 
 select.etiqueta:hover {
-  border-color: var(--cor-borda);
+  border-color: var(--cor-borda-forte);
+  background-color: var(--cor-superficie-alta);
 }
 
 select.etiqueta.etiqueta--vazia {
@@ -1093,8 +1158,7 @@ select.etiqueta.etiqueta--vazia {
 }
 
 .filtros select.botao {
-  appearance: none;
-  padding-right: var(--espaco-4);
+  padding-right: 34px;
   max-width: 12rem;
 }
 
@@ -1286,6 +1350,41 @@ select.etiqueta.etiqueta--vazia {
 
 .barra-mes--ativa {
   background: var(--cor-marca);
+}
+
+.barras:hover .barra-mes {
+  background: var(--cor-superficie-alta);
+}
+
+.barras .barra-mes:hover {
+  background: var(--cor-borda-forte);
+}
+
+.barras .barra-mes--ativa:hover {
+  background: var(--cor-marca-clara);
+}
+
+.rail__item:active,
+.aba:active,
+.perfil:active,
+.tema:active,
+.tag--acao:active,
+.tabela__ordenar:active,
+select.etiqueta:active,
+.campo-arquivo:active .campo-arquivo__botao {
+  transform: translateY(1px);
+}
+
+.rail__item,
+.aba,
+.perfil,
+.tema,
+.tag--acao,
+.tabela__ordenar,
+select.etiqueta,
+.campo-arquivo__botao {
+  transition: color var(--duracao-rapida) var(--curva), background var(--duracao-rapida) var(--curva),
+    border-color var(--duracao-rapida) var(--curva), transform var(--duracao-rapida) var(--curva);
 }
 
 .barras__rotulos {

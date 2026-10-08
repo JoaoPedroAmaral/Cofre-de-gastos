@@ -1,4 +1,4 @@
-const VERSAO = 'v19';
+const VERSAO = 'v20';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const RAIZ = '/';
@@ -84,6 +84,7 @@ const ESSENCIAIS = [
   '/js/ui/ajustesTags.js',
   '/js/ui/cadeado.js',
   '/js/ui/componentes.js',
+  '/js/ui/contador.js',
   '/js/ui/dialogos.js',
   '/js/ui/exportar.js',
   '/js/ui/filtros.js',

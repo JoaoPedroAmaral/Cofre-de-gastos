@@ -64,7 +64,7 @@ export function pedirTexto({ titulo, rotulo, valor = TEXTO_VAZIO, exemplo, suges
 export function pedirEscolha({ titulo, texto, rotulo, opcoes, acao, aoConfirmar }) {
   const seletor = criarElemento(
     'select',
-    { class: 'campo__entrada', 'aria-label': rotulo },
+    { class: 'campo__entrada seletor', 'aria-label': rotulo },
     opcoes.map((opcao) => criarElemento('option', { value: opcao, texto: opcao }))
   );
 

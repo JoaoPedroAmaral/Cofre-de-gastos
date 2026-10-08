@@ -7,6 +7,8 @@ const SELETOR_FOCAVEIS =
 const TECLA_ESCAPE = 'Escape';
 const TECLA_TAB = 'Tab';
 const ID_CONTEUDO = 'conteudo';
+const SEM_ARQUIVO = 'Nenhum arquivo escolhido';
+const ESCOLHER = 'Escolher arquivo';
 
 export function criarElemento(etiqueta, atributos = {}, filhos = []) {
   const elemento = document.createElement(etiqueta);
@@ -34,6 +36,33 @@ export function criarElemento(etiqueta, atributos = {}, filhos = []) {
   lista.filter(Boolean).forEach((filho) => elemento.append(filho));
 
   return elemento;
+}
+
+export function campoDeArquivo({ id, rotulo, aceita, aoEscolher }) {
+  const nome = criarElemento('span', { class: 'campo-arquivo__nome fraco', texto: SEM_ARQUIVO });
+
+  const entrada = criarElemento('input', {
+    class: 'campo-arquivo__entrada',
+    id,
+    type: 'file',
+    accept: aceita,
+    'aria-label': rotulo,
+    onChange: (evento) => {
+      const escolhido = evento.target.files[0];
+      nome.textContent = escolhido ? escolhido.name : SEM_ARQUIVO;
+      if (aoEscolher) {
+        aoEscolher(escolhido);
+      }
+    }
+  });
+
+  const elemento = criarElemento('label', { class: 'campo-arquivo', for: id }, [
+    criarElemento('span', { class: 'campo-arquivo__botao botao', texto: ESCOLHER }),
+    nome,
+    entrada
+  ]);
+
+  return { elemento, entrada };
 }
 
 export function estadoVazio({ titulo, texto, nota }) {

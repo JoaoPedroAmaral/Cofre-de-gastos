@@ -109,7 +109,7 @@ function seletorDeCampo(indice, selecoes, aoMudar) {
   const seletor = criarElemento(
     'select',
     {
-      class: 'seletor-coluna',
+      class: 'seletor-coluna seletor',
       'aria-label': `Campo da coluna ${indice + 1}`,
       onChange: (evento) => {
         atribuir(selecoes, indice, evento.target.value);
