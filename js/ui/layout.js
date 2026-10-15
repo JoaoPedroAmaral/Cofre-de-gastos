@@ -1,22 +1,13 @@
-import {
-  ACOES,
-  ORDEM_TELAS,
-  ROTULOS_TELA,
-  ROTULOS_TEMA,
-  TELAS,
-  TEMAS
-} from '../nucleo/constantes.js';
+import { ACOES, ORDEM_TELAS, ROTULOS_TELA, TEMAS } from '../nucleo/constantes.js';
 import { despachar, observar, obter } from '../estado/store.js';
 import { criarElemento } from './componentes.js';
 import { icone, marca } from './icones.js';
 import { lerTema } from './preferencias.js';
-import { abrirMenuDeTemas } from './temas.js';
 import { preservarFoco } from './foco.js';
 import { travar } from '../cofre/sessao.js';
 
 const NOME_SISTEMA = 'Gastos Controller';
 const ROTULO_TRAVAR = 'Travar';
-const ROTULO_TEMA = 'Tema';
 const DESCRICAO_TRAVAR = 'Trancar o cofre agora. Ele tranca sozinho depois de um tempo parado';
 const CONSULTA_CLARO = '(prefers-color-scheme: light)';
 const ICONE_DA_TRILHA = 20;
@@ -58,21 +49,10 @@ export function montarLayout(raiz) {
     );
   });
 
-  const botaoPrivacidade = criarElemento(
-    'button',
-    {
-      class: 'rail__item rail__item--rodape',
-      type: 'button',
-      dataset: { tela: TELAS.PRIVACIDADE },
-      onClick: () => despachar(ACOES.TROCAR_TELA, TELAS.PRIVACIDADE)
-    },
-    [icone(TELAS.PRIVACIDADE, ICONE_DA_TRILHA), criarElemento('span', { texto: ROTULOS_TELA[TELAS.PRIVACIDADE] })]
-  );
-
   const botaoTravar = criarElemento(
     'button',
     {
-      class: 'rail__item',
+      class: 'rail__item rail__item--rodape',
       type: 'button',
       title: DESCRICAO_TRAVAR,
       'aria-label': `${ROTULO_TRAVAR}. ${DESCRICAO_TRAVAR}`,
@@ -81,23 +61,24 @@ export function montarLayout(raiz) {
     [icone('travar', ICONE_DA_TRILHA), criarElemento('span', { texto: ROTULO_TRAVAR })]
   );
 
-  const botaoTema = criarElemento(
-    'button',
-    {
-      class: 'rail__item',
-      type: 'button',
-      onClick: abrirMenuDeTemas
-    },
-    [icone('tema', ICONE_DA_TRILHA), criarElemento('span', { texto: ROTULO_TEMA })]
-  );
-
-  navegacao.append(botaoPrivacidade, botaoTravar, botaoTema);
+  navegacao.append(botaoTravar);
   raiz.replaceChildren(navegacao, conteudo);
   raiz.classList.add('app');
 
   telaDesenhada = null;
-  cancelarObservacao = observar(() => atualizar(conteudo, navegacao, botaoTema));
-  atualizar(conteudo, navegacao, botaoTema);
+  cancelarObservacao = observar(() => atualizar(conteudo, navegacao));
+  atualizar(conteudo, navegacao);
+}
+
+export function desmontarLayout(raiz) {
+  if (cancelarObservacao) {
+    cancelarObservacao();
+    cancelarObservacao = null;
+  }
+
+  telaDesenhada = null;
+  raiz.classList.remove('app');
+  raiz.replaceChildren();
 }
 
 export function aplicarTemaSalvo() {
@@ -109,12 +90,10 @@ export function aplicarTemaSalvo() {
   aplicarTema(obter().tema);
 }
 
-function atualizar(conteudo, navegacao, botaoTema) {
+function atualizar(conteudo, navegacao) {
   const estado = obter();
 
   aplicarTema(estado.tema);
-  botaoTema.title = ROTULOS_TEMA[estado.tema];
-  botaoTema.setAttribute('aria-label', `${ROTULO_TEMA}. Em uso: ${ROTULOS_TEMA[estado.tema]}`);
 
   navegacao.querySelectorAll('.rail__item[data-tela]').forEach((item) => {
     if (item.dataset.tela === estado.tela) {

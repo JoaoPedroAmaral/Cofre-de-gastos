@@ -1,4 +1,4 @@
-const VERSAO = 'v21';
+const VERSAO = 'v27';
 const NOME_DO_CACHE = `gastos-controller-${VERSAO}`;
 const PAGINA = '/index.html';
 const RAIZ = '/';
@@ -12,6 +12,7 @@ const ESSENCIAIS = [
   '/manifest.webmanifest',
   '/css/base.css',
   '/css/componentes.css',
+  '/css/responsivo.css',
   '/css/tema.css',
   '/js/main.js',
   '/js/armazenamento/backup.js',
@@ -30,6 +31,14 @@ const ESSENCIAIS = [
   '/js/cofre/validadeDaSessao.js',
   '/js/dados/regrasSemente.js',
   '/js/estado/store.js',
+  '/js/estado/inicial.js',
+  '/js/estado/redutores/catalogos.js',
+  '/js/estado/redutores/cofre.js',
+  '/js/estado/redutores/importacao.js',
+  '/js/estado/redutores/lancamentos.js',
+  '/js/estado/redutores/preferencias.js',
+  '/js/estado/redutores/recorte.js',
+  '/js/estado/redutores/regras.js',
   '/js/exportacao/abas.js',
   '/js/exportacao/arquivo.js',
   '/js/exportacao/csv.js',
@@ -81,9 +90,16 @@ const ESSENCIAIS = [
   '/js/ui/ajustes.js',
   '/js/ui/ajustesCategorias.js',
   '/js/ui/ajustesIdentidade.js',
+  '/js/ui/ajustesPrivacidade.js',
   '/js/ui/ajustesTags.js',
   '/js/ui/cadeado.js',
   '/js/ui/componentes.js',
+  '/js/ui/cofre/criacao.js',
+  '/js/ui/cofre/desbloqueio.js',
+  '/js/ui/cofre/moldura.js',
+  '/js/ui/cofre/perfis.js',
+  '/js/ui/cofre/restauracao.js',
+  '/js/ui/cofre/textos.js',
   '/js/ui/contador.js',
   '/js/ui/dialogos.js',
   '/js/ui/exportar.js',

@@ -2,6 +2,8 @@ import { criarElemento } from './componentes.js';
 import { secaoIdentidade } from './ajustesIdentidade.js';
 import { secaoCategorias } from './ajustesCategorias.js';
 import { secaoTags } from './ajustesTags.js';
+import { secaoTemas } from './temas.js';
+import { secaoPrivacidade } from './ajustesPrivacidade.js';
 
 const TEXTOS = Object.freeze({
   TITULO: 'Ajustes',
@@ -16,6 +18,8 @@ export function telaAjustes(estado) {
     ]),
     secaoIdentidade(estado),
     secaoCategorias(estado),
-    secaoTags(estado)
+    secaoTags(estado),
+    secaoTemas(estado),
+    secaoPrivacidade()
   ]);
 }

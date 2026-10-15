@@ -6,21 +6,25 @@ import {
   ROTULOS_TEMA,
   TEMAS
 } from '../../js/nucleo/constantes.js';
-import { abrirMenuDeTemas } from '../../js/ui/temas.js';
+import { secaoTemas } from '../../js/ui/temas.js';
 import { despachar, obter, reiniciar } from '../../js/estado/store.js';
 
 const TEMAS_ESCOLHIVEIS = Object.values(TEMAS).filter((tema) => tema !== TEMAS.SISTEMA);
 
-function opcoes(modal) {
-  return [...modal.elemento.querySelectorAll('.tema')];
+function escolhaDeTema() {
+  return secaoTemas(obter());
 }
 
-function nomes(modal) {
-  return opcoes(modal).map((opcao) => opcao.querySelector('.tema__nome').textContent);
+function opcoes(secao) {
+  return [...secao.querySelectorAll('.tema')];
 }
 
-function ativa(modal) {
-  return modal.elemento.querySelector('.tema--ativo')?.querySelector('.tema__nome')?.textContent ?? null;
+function nomes(secao) {
+  return opcoes(secao).map((opcao) => opcao.querySelector('.tema__nome').textContent);
+}
+
+function ativa(secao) {
+  return secao.querySelector('.tema--ativo')?.querySelector('.tema__nome')?.textContent ?? null;
 }
 
 descrever('Catálogo de temas', () => {
@@ -51,74 +55,72 @@ descrever('Catálogo de temas', () => {
   });
 });
 
-descrever('Escolha de tema por menu', () => {
-  isso('o menu mostra todos os temas, com nome e descricao', () => {
+descrever('Escolha de tema em Ajustes', () => {
+  isso('a escolha mostra todos os temas, com nome e descricao', () => {
     reiniciar();
-    const modal = abrirMenuDeTemas();
+    const secao = escolhaDeTema();
 
-    esperar(opcoes(modal).length).igual(ORDEM_TEMAS.length);
-    esperar(nomes(modal)).igual(ORDEM_TEMAS.map((tema) => ROTULOS_TEMA[tema]));
-    modal.fechar();
+    esperar(opcoes(secao).length).igual(ORDEM_TEMAS.length);
+    esperar(nomes(secao)).igual(ORDEM_TEMAS.map((tema) => ROTULOS_TEMA[tema]));
+  });
+
+  isso('cada opcao traz a descricao do tema', () => {
+    reiniciar();
+    const descricoes = opcoes(escolhaDeTema()).map((opcao) => opcao.querySelector('.tema__descricao').textContent);
+
+    esperar(descricoes).igual(ORDEM_TEMAS.map((tema) => DESCRICOES_TEMA[tema]));
   });
 
   isso('o tema em uso aparece marcado', () => {
     reiniciar();
     despachar(ACOES.DEFINIR_TEMA, TEMAS.PAPEL);
-    const modal = abrirMenuDeTemas();
 
-    esperar(ativa(modal)).igual(ROTULOS_TEMA[TEMAS.PAPEL]);
-    modal.fechar();
+    esperar(ativa(escolhaDeTema())).igual(ROTULOS_TEMA[TEMAS.PAPEL]);
   });
 
   isso('so um tema fica marcado por vez', () => {
     reiniciar();
-    const modal = abrirMenuDeTemas();
 
-    esperar(modal.elemento.querySelectorAll('.tema--ativo').length).igual(1);
-    modal.fechar();
+    esperar(escolhaDeTema().querySelectorAll('.tema--ativo').length).igual(1);
   });
 
-  isso('escolher um tema troca o tema na hora, sem fechar o menu', () => {
+  isso('escolher um tema troca o tema na hora', () => {
     reiniciar();
-    const modal = abrirMenuDeTemas();
-    const alvo = opcoes(modal).find((opcao) => opcao.textContent.includes(ROTULOS_TEMA[TEMAS.NOITE]));
+    const secao = escolhaDeTema();
+    const alvo = opcoes(secao).find((opcao) => opcao.textContent.includes(ROTULOS_TEMA[TEMAS.NOITE]));
 
     alvo.click();
 
     esperar(obter().tema).igual(TEMAS.NOITE);
-    esperar(ativa(modal)).igual(ROTULOS_TEMA[TEMAS.NOITE]);
-    modal.fechar();
+    esperar(ativa(escolhaDeTema())).igual(ROTULOS_TEMA[TEMAS.NOITE]);
   });
 
   isso('qualquer tema do catalogo pode ser escolhido direto, sem passar pelos outros', () => {
     reiniciar();
-    const modal = abrirMenuDeTemas();
 
     ORDEM_TEMAS.forEach((tema) => {
-      const alvo = opcoes(modal).find((opcao) => opcao.querySelector('.tema__nome').textContent === ROTULOS_TEMA[tema]);
+      const alvo = opcoes(escolhaDeTema()).find(
+        (opcao) => opcao.querySelector('.tema__nome').textContent === ROTULOS_TEMA[tema]
+      );
       alvo.click();
       esperar(obter().tema).igual(tema);
     });
-
-    modal.fechar();
   });
 
   isso('cada opcao se anuncia como escolha unica', () => {
     reiniciar();
-    const modal = abrirMenuDeTemas();
-    const papeis = opcoes(modal).map((opcao) => opcao.getAttribute('role'));
-    const marcados = opcoes(modal).map((opcao) => opcao.getAttribute('aria-checked'));
+    const secao = escolhaDeTema();
+    const papeis = opcoes(secao).map((opcao) => opcao.getAttribute('role'));
+    const marcados = opcoes(secao).map((opcao) => opcao.getAttribute('aria-checked'));
 
     esperar(papeis.every((papel) => papel === 'radio')).verdadeiro();
     esperar(marcados.filter((valor) => valor === 'true').length).igual(1);
-    modal.fechar();
   });
 
-  isso('o menu fecha e some da tela', () => {
+  isso('a escolha nao abre modal nenhum', () => {
     reiniciar();
-    const modal = abrirMenuDeTemas();
-    modal.fechar();
+    escolhaDeTema();
 
-    esperar(document.querySelectorAll('.temas__lista').length).igual(0);
+    esperar(document.querySelectorAll('.modal').length).igual(0);
   });
 });

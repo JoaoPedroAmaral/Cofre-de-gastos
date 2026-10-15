@@ -7,6 +7,7 @@ const ESPACO = ' ';
 const ESPACOS = /\s+/g;
 const NAO_DIGITOS = /\D+/g;
 const MINIMO_DE_DIGITOS = 4;
+const MINIMO_DE_DIGITOS_VISIVEIS = 6;
 const SEPARADOR_DE_PARTES = ' - ';
 const PADRAO_DOCUMENTO = /^[\d•*][\d•*./-]*$/;
 const PADRAO_NOME = /^[A-Z][A-Z&.\s]+$/;
@@ -93,7 +94,13 @@ function casaPorDigitos(digitosDaDescricao, numero) {
   if (procurado.length < MINIMO_DE_DIGITOS) {
     return false;
   }
-  return digitosDaDescricao.includes(procurado);
+  if (digitosDaDescricao.includes(procurado)) {
+    return true;
+  }
+  return (
+    digitosDaDescricao.length >= MINIMO_DE_DIGITOS_VISIVEIS &&
+    procurado.includes(digitosDaDescricao)
+  );
 }
 
 function jaExiste(atuais, termo) {

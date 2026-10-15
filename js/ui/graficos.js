@@ -1,9 +1,10 @@
 import { criarElemento } from './componentes.js';
+import { formatarMesCurto } from './formato.js';
 
 const ESPACO_SVG = 'http://www.w3.org/2000/svg';
+const PERCENTUAL_CHEIO = 100;
 
 const ANEL = Object.freeze({
-  TAMANHO: 320,
   CENTRO: 200,
   CAIXA: 400,
   RAIO_EXTERNO: 164,
@@ -14,21 +15,16 @@ const ANEL = Object.freeze({
   TRACEJADO: '1.5 8.66'
 });
 
-const BARRA_MES = Object.freeze({
-  ALTURA: 96,
-  LARGURA: 36,
-  MINIMA: 6,
-  RAIO: 6
-});
+const ALTURA_MINIMA_DA_BARRA = 6;
 
 const CIRCUNFERENCIA = 2 * Math.PI;
 const SERIES = ['--serie-1', '--serie-2', '--serie-3', '--serie-4'];
 
 export function anelCategorias(categorias) {
   const svg = elemento('svg', {
-    width: ANEL.TAMANHO,
-    height: ANEL.TAMANHO,
     viewBox: `0 0 ${ANEL.CAIXA} ${ANEL.CAIXA}`,
+    preserveAspectRatio: 'xMidYMid meet',
+    class: 'anel__grafico',
     role: 'img',
     'aria-label': rotuloDoAnel(categorias)
   });
@@ -79,24 +75,30 @@ export function anelCategorias(categorias) {
 export function barrasMensais(meses, mesAtivo) {
   const maior = meses.reduce((maximo, item) => Math.max(maximo, item.total), 0);
 
-  return meses.map((item) => {
-    const barra = criarElemento('span', {
-      class: item.mes === mesAtivo ? 'barra-mes barra-mes--ativa' : 'barra-mes'
-    });
+  return meses.flatMap((item) => [barraDoMes(item, maior, mesAtivo), rotuloDoMes(item, mesAtivo)]);
+}
 
-    barra.style.height = `${alturaDaBarra(item.total, maior)}px`;
-    barra.style.width = `${BARRA_MES.LARGURA}px`;
-    barra.style.borderRadius = `${BARRA_MES.RAIO}px`;
+function barraDoMes(item, maior, mesAtivo) {
+  const barra = criarElemento('span', {
+    class: item.mes === mesAtivo ? 'barra-mes barra-mes--ativa' : 'barra-mes'
+  });
 
-    return barra;
+  barra.style.height = `${alturaDaBarra(item.total, maior)}%`;
+  return barra;
+}
+
+function rotuloDoMes(item, mesAtivo) {
+  return criarElemento('span', {
+    class: item.mes === mesAtivo ? 'barras__rotulo barras__rotulo--ativo' : 'barras__rotulo',
+    texto: formatarMesCurto(item.mes)
   });
 }
 
 function alturaDaBarra(valor, maior) {
   if (maior === 0) {
-    return BARRA_MES.MINIMA;
+    return ALTURA_MINIMA_DA_BARRA;
   }
-  return Math.max(BARRA_MES.MINIMA, Math.round((valor / maior) * BARRA_MES.ALTURA));
+  return Math.max(ALTURA_MINIMA_DA_BARRA, Math.round((valor / maior) * PERCENTUAL_CHEIO));
 }
 
 function rotuloDoAnel(categorias) {
@@ -105,7 +107,7 @@ function rotuloDoAnel(categorias) {
   }
   return categorias
     .slice(0, ANEL.FAIXAS)
-    .map((fatia) => `${fatia.categoria}: ${Math.round(fatia.participacao * 100)}%`)
+    .map((fatia) => `${fatia.categoria}: ${Math.round(fatia.participacao * PERCENTUAL_CHEIO)}%`)
     .join(', ');
 }
 

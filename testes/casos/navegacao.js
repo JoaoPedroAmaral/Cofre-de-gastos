@@ -5,8 +5,10 @@ import {
   ACOES,
   CATEGORIA_SEM_CLASSIFICACAO,
   CONTEXTOS_DE_PAGINA,
+  ORDEM_TELAS,
   TELAS
 } from '../../js/nucleo/constantes.js';
+import { icone } from '../../js/ui/icones.js';
 import { preparar } from '../../js/nucleo/preparar.js';
 import { telaPainel } from '../../js/ui/painel.js';
 
@@ -183,5 +185,42 @@ descrever('Os atalhos do painel caem na aba certa', () => {
     atalho.click();
 
     esperar(obter().aba).igual(ABAS_PLANILHA.SEM_CATEGORIA);
+  });
+});
+
+const ACOES_DA_TRILHA = ['travar', 'tema'];
+const DESTINOS_DA_TRILHA = [...ORDEM_TELAS, TELAS.PRIVACIDADE, ...ACOES_DA_TRILHA];
+
+function assinaturaDe(nome) {
+  const svg = icone(nome);
+  const formas = [...svg.children].map((no) => no.tagName).sort().join(',');
+  const comandos = [...svg.querySelectorAll('path')]
+    .map((no) => no.getAttribute('d').replace(/[^A-Za-z]/g, ''))
+    .join('|');
+  return `${formas}::${comandos}`;
+}
+
+descrever('Cada item da trilha tem símbolo próprio', () => {
+  isso('nenhum par de itens repete a mesma construção de desenho', () => {
+    const repetidos = [];
+
+    DESTINOS_DA_TRILHA.forEach((um, posicao) => {
+      DESTINOS_DA_TRILHA.slice(posicao + 1).forEach((outro) => {
+        if (assinaturaDe(um) === assinaturaDe(outro)) {
+          repetidos.push(`${um} e ${outro}`);
+        }
+      });
+    });
+
+    esperar(repetidos.length).igual(0);
+  });
+
+  isso('todo item da trilha tem desenho', () => {
+    const vazios = DESTINOS_DA_TRILHA.filter((nome) => icone(nome).children.length === 0);
+    esperar(vazios.length).igual(0);
+  });
+
+  isso('o símbolo de Regras não repete a construção de Ajustes', () => {
+    esperar(assinaturaDe(TELAS.REGRAS) === assinaturaDe(TELAS.AJUSTES)).falso();
   });
 });

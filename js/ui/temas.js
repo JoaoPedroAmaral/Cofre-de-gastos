@@ -1,12 +1,11 @@
 import { ACOES, DESCRICOES_TEMA, ORDEM_TEMAS, ROTULOS_TEMA, TEMAS } from '../nucleo/constantes.js';
-import { despachar, obter } from '../estado/store.js';
-import { abrirModal, criarElemento } from './componentes.js';
+import { despachar } from '../estado/store.js';
+import { criarElemento } from './componentes.js';
 import { salvarTema } from './preferencias.js';
 
 const TEXTOS = Object.freeze({
   TITULO: 'Tema',
   AJUDA: 'A escolha vale neste navegador e muda na hora.',
-  FECHAR: 'Fechar',
   ATUAL: 'Em uso'
 });
 
@@ -19,25 +18,20 @@ const AMOSTRAS = Object.freeze({
   [TEMAS.CONTRASTE]: ['#000000', '#171717', '#ffc83d']
 });
 
-export function abrirMenuDeTemas() {
-  const corpo = criarElemento('div', { class: 'temas' }, [
-    criarElemento('p', { class: 'fraco', texto: TEXTOS.AJUDA }),
-    criarElemento('div', { class: 'temas__lista', role: 'radiogroup', 'aria-label': TEXTOS.TITULO })
+export function secaoTemas(estado) {
+  return criarElemento('section', { class: 'ajustes__secao' }, [
+    criarElemento('h2', { texto: TEXTOS.TITULO }),
+    criarElemento('p', { class: 'ajustes__ajuda', texto: TEXTOS.AJUDA }),
+    criarElemento(
+      'div',
+      { class: 'temas__lista', role: 'radiogroup', 'aria-label': TEXTOS.TITULO },
+      ORDEM_TEMAS.map((tema) => opcao(tema, estado.tema))
+    )
   ]);
-
-  const modal = abrirModal({
-    titulo: TEXTOS.TITULO,
-    corpo,
-    acoes: [{ rotulo: TEXTOS.FECHAR, aoClicar: () => modal.fechar() }]
-  });
-
-  const lista = corpo.querySelector('.temas__lista');
-  lista.replaceChildren(...ORDEM_TEMAS.map((tema) => opcao(tema, lista)));
-  return modal;
 }
 
-function opcao(tema, lista) {
-  const escolhido = obter().tema === tema;
+function opcao(tema, temaEmUso) {
+  const escolhido = temaEmUso === tema;
 
   return criarElemento(
     'button',
@@ -46,7 +40,7 @@ function opcao(tema, lista) {
       type: 'button',
       role: 'radio',
       'aria-checked': String(escolhido),
-      onClick: () => escolher(tema, lista)
+      onClick: () => escolher(tema)
     },
     [
       amostra(tema),
@@ -69,8 +63,7 @@ function amostra(tema) {
   );
 }
 
-function escolher(tema, lista) {
+function escolher(tema) {
   despachar(ACOES.DEFINIR_TEMA, tema);
   salvarTema(tema);
-  lista.replaceChildren(...ORDEM_TEMAS.map((cada) => opcao(cada, lista)));
 }

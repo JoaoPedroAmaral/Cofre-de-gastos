@@ -11,13 +11,14 @@ import {
 import { criarElemento, estadoVazio } from './componentes.js';
 import { anelCategorias, barrasMensais } from './graficos.js';
 import { animarAte } from './contador.js';
-import { formatarMesCurto, formatarMesLongo, formatarMoeda, formatarPercentual } from './formato.js';
+import { formatarMesLongo, formatarMoeda, formatarPercentual } from './formato.js';
 import { navegacaoDeMes } from './filtros.js';
 
 const TOTAL_DE_SERIES = 8;
 const PERCENTUAL_CHEIO = 100;
 const CATEGORIAS_VISIVEIS = 4;
 const COMERCIANTES_VISIVEIS = 3;
+const VARIAVEL_DE_MESES = '--meses';
 const TEXTO_VAZIO = '';
 
 const TEXTOS = Object.freeze({
@@ -246,19 +247,12 @@ function blocoEvolucao(estado) {
   const todos = aplicar(estado.lancamentos, { ...estado.filtros, mes: TEXTO_VAZIO }, estado.competencia);
   const meses = porMes(todos, estado.competencia);
 
+  const grafico = criarElemento('div', { class: 'barras' }, barrasMensais(meses, estado.filtros.mes));
+  grafico.style.setProperty(VARIAVEL_DE_MESES, String(meses.length));
+
   return criarElemento('div', { class: 'bloco' }, [
     criarElemento('h2', { texto: TEXTOS.EVOLUCAO }),
-    criarElemento('div', { class: 'barras' }, barrasMensais(meses, estado.filtros.mes)),
-    criarElemento(
-      'div',
-      { class: 'barras__rotulos fraco' },
-      meses.map((item) =>
-        criarElemento('span', {
-          class: item.mes === estado.filtros.mes ? 'barras__rotulo barras__rotulo--ativo' : 'barras__rotulo',
-          texto: formatarMesCurto(item.mes)
-        })
-      )
-    )
+    grafico
   ]);
 }
 

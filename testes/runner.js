@@ -42,6 +42,16 @@ export function esperar(valor) {
         throw new Error(`esperava false, recebeu ${representar(valor)}`);
       }
     },
+    naoPassaDe(limite) {
+      if (!(valor <= limite)) {
+        throw new Error(`esperava no máximo ${representar(limite)}, recebeu ${representar(valor)}`);
+      }
+    },
+    aoMenos(minimo) {
+      if (!(valor >= minimo)) {
+        throw new Error(`esperava ao menos ${representar(minimo)}, recebeu ${representar(valor)}`);
+      }
+    },
     contem(trecho) {
       if (!String(valor).includes(trecho)) {
         throw new Error(`esperava que ${representar(valor)} contivesse ${representar(trecho)}`);

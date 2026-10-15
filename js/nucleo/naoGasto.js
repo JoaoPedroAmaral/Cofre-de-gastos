@@ -70,7 +70,14 @@ export function motivoDe(descricao, identidade) {
   return regra ? regra.motivo : false;
 }
 
+export function ehContaPropria(lancamento) {
+  return lancamento.naoGasto === MOTIVOS_NAO_GASTO.CONTA_PROPRIA;
+}
+
 export function estaForaDoTotal(lancamento) {
+  if (ehContaPropria(lancamento)) {
+    return true;
+  }
   if (lancamento.foraDoTotalManual === true) {
     return true;
   }

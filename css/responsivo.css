@@ -1,0 +1,359 @@
+@media (max-width: 63.75rem) {
+  .grade-importar,
+  .grade-regras,
+  .mapeador,
+  .painel-topo,
+  .painel-baixo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .grade-importar,
+  .grade-regras,
+  .painel-topo,
+  .painel-baixo {
+    gap: var(--espaco-6);
+  }
+
+  .regra {
+    grid-template-columns: 28px minmax(0, 1fr);
+    row-gap: var(--espaco-2);
+  }
+
+  .regra__acertos {
+    text-align: left;
+  }
+}
+
+@media (max-width: 48rem) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rail {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 20;
+    flex-direction: row;
+    gap: 0;
+    height: auto;
+    overflow: visible;
+    padding: var(--espaco-1) var(--espaco-2) calc(var(--espaco-1) + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-top: 1px solid var(--cor-linha);
+    background: var(--cor-fundo);
+  }
+
+  .rail__marca {
+    display: none;
+  }
+
+  .rail__item {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    min-height: var(--altura-item-trilha);
+    gap: 2px;
+    padding: var(--espaco-1) 2px;
+    font-size: var(--texto-trilha);
+  }
+
+  .rail__item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rail__item--rodape {
+    margin-top: 0;
+  }
+
+  .conteudo {
+    padding-bottom: calc(var(--altura-trilha) + var(--espaco-4));
+  }
+
+  .tabela thead {
+    display: none;
+  }
+
+  .tabela,
+  .tabela tbody,
+  .tabela td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabela tbody tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'selecao data valor'
+      'selecao descricao valor'
+      'selecao categoria categoria'
+      'selecao tags tags';
+    gap: var(--espaco-1) var(--espaco-3);
+    padding: var(--espaco-3) 0;
+    border-bottom: 1px solid var(--cor-linha);
+  }
+
+  .tabela td {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .tabela__selecao {
+    grid-area: selecao;
+    align-self: start;
+    width: auto;
+  }
+
+  .tabela__data {
+    grid-area: data;
+    font-size: var(--texto-xs);
+  }
+
+  .tabela__descricao {
+    grid-area: descricao;
+  }
+
+  .tabela__categoria {
+    grid-area: categoria;
+  }
+
+  .tabela__tags {
+    grid-area: tags;
+    width: auto;
+  }
+
+  .tabela__valor {
+    grid-area: valor;
+    align-self: start;
+  }
+
+  .tabela__categoria:empty,
+  .tabela__tags:empty {
+    display: none;
+  }
+
+  .linha--sugestao td {
+    grid-area: auto / 1 / auto / -1;
+  }
+
+  .barra-ferramentas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .abas {
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .abas::-webkit-scrollbar {
+    display: none;
+  }
+
+  .aba {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .filtros {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espaco-2);
+  }
+
+  .filtros .busca,
+  .filtros > .botao--discreto {
+    grid-column: 1 / -1;
+  }
+
+  .busca {
+    width: auto;
+  }
+
+  .filtros select.botao {
+    width: 100%;
+    max-width: none;
+  }
+
+  .navegacao-mes {
+    flex-wrap: wrap;
+  }
+
+  .navegacao-mes__rotulo {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .destaque__secundarios {
+    gap: var(--espaco-4) var(--espaco-6);
+  }
+
+  .faixa-destaque--acao {
+    flex-wrap: wrap;
+  }
+
+  .previa__linha {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .categoria {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    column-gap: var(--espaco-3);
+  }
+
+  .catalogo__linha {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    row-gap: var(--espaco-1);
+  }
+
+  .catalogo__nome {
+    grid-column: 1 / -1;
+  }
+
+  .arquivo {
+    grid-template-columns: 40px minmax(0, 1fr);
+    row-gap: var(--espaco-2);
+  }
+
+  .arquivo__numeros {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .pendencias {
+    margin-left: 0;
+  }
+
+  .segmentado,
+  .resumo-importacao__acoes,
+  .atalho-importar,
+  .cartao__acoes,
+  .codigo__acoes,
+  .levar-sistema {
+    flex-wrap: wrap;
+  }
+
+  .segmentado__item {
+    flex: 1 1 auto;
+  }
+
+  .avisos {
+    left: var(--espaco-3);
+    right: var(--espaco-3);
+    bottom: calc(var(--altura-trilha) + var(--espaco-2));
+    max-width: none;
+  }
+
+  .barra-selecao {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-self: stretch;
+    gap: var(--espaco-2);
+    bottom: calc(var(--altura-trilha) + var(--espaco-2));
+    max-height: calc(var(--altura-tela) / 3);
+    padding: var(--espaco-3);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .barra-selecao__contagem,
+  .barra-selecao .campo__entrada {
+    grid-column: 1 / -1;
+  }
+
+  .barra-selecao .botao {
+    height: var(--altura-controle-compacto);
+    padding: 0 10px;
+    font-size: var(--texto-sm);
+  }
+
+  .modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal__caixa {
+    width: 100%;
+    max-height: calc(var(--altura-tela) - var(--espaco-6));
+    padding: var(--espaco-5) var(--espaco-4) calc(var(--espaco-5) + env(safe-area-inset-bottom));
+    border-radius: var(--raio-xl) var(--raio-xl) 0 0;
+  }
+
+  .modal__acoes {
+    flex-wrap: wrap;
+  }
+
+  .modal__acoes .botao {
+    flex: 1 1 10rem;
+  }
+}
+
+@media (max-width: 30rem) {
+  .pagina__cabecalho,
+  .pagina__rodape {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pagina__conteudo {
+    padding: var(--espaco-6) var(--espaco-4);
+  }
+}
+
+@media (hover: none) {
+  .botao,
+  .aba,
+  .etiqueta,
+  .segmentado__item,
+  .tag--acao {
+    min-height: var(--alvo-toque);
+  }
+
+  .regra__acoes .botao,
+  .barra-selecao .botao {
+    min-height: var(--alvo-toque-denso);
+  }
+
+  .tag__remover {
+    width: var(--alvo-toque-miudo);
+    height: var(--alvo-toque-miudo);
+  }
+
+  .tabela__selecao input,
+  .cofre__confirmacao input {
+    width: var(--alvo-toque-miudo);
+    height: var(--alvo-toque-miudo);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 30rem) {
+  :root {
+    --altura-item-trilha: var(--altura-controle-compacto);
+  }
+
+  .rail__item span {
+    display: none;
+  }
+}
+
+@media print {
+  .rail,
+  .avisos,
+  .barra-selecao,
+  .paginacao {
+    display: none;
+  }
+
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .conteudo {
+    padding: 0;
+  }
+}

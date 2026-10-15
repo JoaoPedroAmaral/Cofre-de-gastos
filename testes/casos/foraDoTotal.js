@@ -102,6 +102,31 @@ descrever('Identidade do titular', () => {
     esperar(combina(RECEBIDO_DE_SI, identidade)).verdadeiro();
   });
 
+  isso('casa documento inteiro cadastrado contra extrato que imprime mascarado', () => {
+    const identidade = acrescentarTermo(identidadeVazia(), TIPOS_IDENTIDADE.DOCUMENTOS, '709.666.061-59');
+    esperar(combina('Pix enviado JOAO PEDRO AMARAL ROSA •••.666.061-••', identidade)).verdadeiro();
+  });
+
+  isso('casa documento inteiro cadastrado sem pontuacao contra extrato mascarado', () => {
+    const identidade = acrescentarTermo(identidadeVazia(), TIPOS_IDENTIDADE.DOCUMENTOS, '70966606159');
+    esperar(combina('Pix enviado JOAO PEDRO AMARAL ROSA •••.666.061-••', identidade)).verdadeiro();
+  });
+
+  isso('nao casa documento mascarado de outra pessoa', () => {
+    const identidade = acrescentarTermo(identidadeVazia(), TIPOS_IDENTIDADE.DOCUMENTOS, '709.666.061-59');
+    esperar(combina('Pix recebido MARIA SOUZA •••.123.456-••', identidade)).falso();
+  });
+
+  isso('nao casa descricao com digitos de menos para ser documento', () => {
+    const identidade = acrescentarTermo(identidadeVazia(), TIPOS_IDENTIDADE.DOCUMENTOS, '709.666.061-59');
+    esperar(combina('Pix enviado LOJA 123', identidade)).falso();
+  });
+
+  isso('nao casa descricao sem digito nenhum', () => {
+    const identidade = acrescentarTermo(identidadeVazia(), TIPOS_IDENTIDADE.DOCUMENTOS, '709.666.061-59');
+    esperar(combina("Pix enviado MCDONALD'S", identidade)).falso();
+  });
+
   isso('casa a conta propria pelo numero', () => {
     const identidade = acrescentarTermo(identidadeVazia(), TIPOS_IDENTIDADE.CONTAS, CONTA);
     esperar(combina(RECEBIDO_DE_SI, identidade)).verdadeiro();
@@ -144,6 +169,30 @@ descrever('Identidade do titular', () => {
     const candidatos = candidatosDe(RECEBIDO_DE_SI);
     esperar(candidatos.nome).igual('JOAO PEDRO AMARAL ROSA');
     esperar(candidatos.documento).igual(DOCUMENTO);
+  });
+});
+
+descrever('A identidade vence a marcação manual', () => {
+  isso('lançamento de conta própria incluído no total à mão continua fora do total', () => {
+    const lancamento = { naoGasto: MOTIVOS_NAO_GASTO.CONTA_PROPRIA, foraDoTotalManual: false };
+    esperar(estaForaDoTotal(lancamento)).verdadeiro();
+  });
+
+  isso('lançamento de conta própria sem marcação fica fora do total', () => {
+    esperar(estaForaDoTotal({ naoGasto: MOTIVOS_NAO_GASTO.CONTA_PROPRIA, foraDoTotalManual: null })).verdadeiro();
+  });
+
+  isso('motivo automático que não é identidade continua podendo ser revertido', () => {
+    const lancamento = { naoGasto: MOTIVOS_NAO_GASTO.APLICACAO, foraDoTotalManual: false };
+    esperar(estaForaDoTotal(lancamento)).falso();
+  });
+
+  isso('gasto comum tirado do total à mão continua fora', () => {
+    esperar(estaForaDoTotal({ naoGasto: false, foraDoTotalManual: true })).verdadeiro();
+  });
+
+  isso('gasto comum sem marcação continua no total', () => {
+    esperar(estaForaDoTotal({ naoGasto: false, foraDoTotalManual: null })).falso();
   });
 });
 

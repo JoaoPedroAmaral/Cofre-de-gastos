@@ -4,7 +4,7 @@ const TRACOS = Object.freeze({
   painel: ['M12 12l4-3'],
   planilha: ['M4 6h16M4 12h16M4 18h16'],
   importar: ['M12 4v11M7 10l5 5 5-5M5 20h14'],
-  regras: ['M5 7h7M16 7h3M5 17h3M12 17h7'],
+  regras: ['M4 12h5M9 12l5-5M9 12l5 5'],
   exportar: ['M12 15V4M7 9l5-5 5 5M5 20h14'],
   ajustes: ['M5 8h8M17 8h2M5 16h2M11 16h8'],
   travar: ['M8 11V7a4 4 0 0 1 8 0v4'],
@@ -21,8 +21,8 @@ const TRACOS = Object.freeze({
 const CIRCULOS = Object.freeze({
   painel: [{ cx: 12, cy: 12, r: 8 }],
   regras: [
-    { cx: 14, cy: 7, r: 2 },
-    { cx: 10, cy: 17, r: 2 }
+    { cx: 16, cy: 7, r: 2 },
+    { cx: 16, cy: 17, r: 2 }
   ],
   tema: [{ cx: 12, cy: 12, r: 8 }],
   busca: [{ cx: 11, cy: 11, r: 7 }],

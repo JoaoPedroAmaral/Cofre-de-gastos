@@ -38,8 +38,8 @@ const CAMPOS = Object.freeze([
   {
     tipo: TIPOS_IDENTIDADE.DOCUMENTOS,
     rotulo: 'Seus documentos',
-    ajuda: 'Pode colar do jeito que o banco imprime, mascarado. O sistema usa só os dígitos visíveis.',
-    exemplo: '•••.421.581-••'
+    ajuda: 'Cole o CPF inteiro. Funciona também se o extrato imprimir só parte dele, mascarado.',
+    exemplo: '123.421.581-00'
   },
   {
     tipo: TIPOS_IDENTIDADE.CONTAS,

@@ -4,14 +4,14 @@ import {
   CATEGORIA_SEM_CLASSIFICACAO,
   COLUNAS_PLANILHA,
   CONTEXTOS_DE_PAGINA,
+  PAPEIS_COLUNA_PLANILHA,
   ROTULOS_ABA,
   ROTULOS_METODO,
   TAMANHO_DE_PAGINA,
-  TELAS,
-  TIPOS_COLUNA
+  TELAS
 } from '../nucleo/constantes.js';
 import { despachar } from '../estado/store.js';
-import { estaForaDoTotal, rotuloForaDoTotal } from '../nucleo/naoGasto.js';
+import { ehContaPropria, estaForaDoTotal, rotuloForaDoTotal } from '../nucleo/naoGasto.js';
 import { criarElemento, estadoVazio } from './componentes.js';
 import { pedirTexto } from './dialogos.js';
 import { existe } from '../nucleo/catalogo.js';
@@ -277,9 +277,11 @@ function cabecalho(estado, lancamentos) {
 
   return criarElemento('thead', {}, [
     criarElemento('tr', {}, [
-      criarElemento('th', { class: 'tabela__selecao' }, [marcadorDeTudo(estado, lancamentos)]),
+      criarElemento('th', { class: PAPEIS_COLUNA_PLANILHA.SELECAO }, [
+        marcadorDeTudo(estado, lancamentos)
+      ]),
       ...COLUNAS_PLANILHA.map((coluna) =>
-        criarElemento('th', { class: classeDaColuna(coluna) }, [
+        criarElemento('th', { class: coluna.papel }, [
           criarElemento(
             'button',
             {
@@ -322,10 +324,6 @@ function marcadorDeTudo(estado, lancamentos) {
   return marcador;
 }
 
-function classeDaColuna(coluna) {
-  return coluna.tipo === TIPOS_COLUNA.MOEDA ? 'tabela__coluna-valor' : TEXTO_VAZIO;
-}
-
 function linha(lancamento, estado) {
   const fora = estaForaDoTotal(lancamento);
   const selecionado = estado.selecao.includes(lancamento.id);
@@ -338,16 +336,18 @@ function linha(lancamento, estado) {
   marcador.checked = selecionado;
 
   return criarElemento('tr', { class: classeLinha(fora, selecionado) }, [
-    criarElemento('td', { class: 'tabela__selecao' }, [marcador]),
-    criarElemento('td', { class: 'tabela__data', texto: formatarData(lancamento.data) }),
-    criarElemento('td', {}, [
+    criarElemento('td', { class: PAPEIS_COLUNA_PLANILHA.SELECAO }, [marcador]),
+    criarElemento('td', { class: PAPEIS_COLUNA_PLANILHA.DATA, texto: formatarData(lancamento.data) }),
+    criarElemento('td', { class: PAPEIS_COLUNA_PLANILHA.DESCRICAO }, [
       criarElemento('div', { class: 'lancamento' }, [
         criarElemento('span', { texto: lancamento.descricaoOriginal }),
         criarElemento('small', { class: 'lancamento__detalhe', texto: detalhe(lancamento) })
       ])
     ]),
-    criarElemento('td', {}, [celulaCategoria(lancamento, estado, fora)]),
-    criarElemento('td', { class: 'tabela__tags' }, [celulaDeTags(lancamento, estado)]),
+    criarElemento('td', { class: PAPEIS_COLUNA_PLANILHA.CATEGORIA }, [
+      celulaCategoria(lancamento, estado, fora)
+    ]),
+    criarElemento('td', { class: PAPEIS_COLUNA_PLANILHA.TAGS }, [celulaDeTags(lancamento, estado)]),
     criarElemento('td', {
       class: classeValor(lancamento),
       texto: formatarMoeda(lancamento.valor)
@@ -373,8 +373,10 @@ function celulaCategoria(lancamento, estado, fora) {
         class: 'etiqueta etiqueta--fora',
         texto: `${TEXTOS.FORA} · ${rotuloForaDoTotal(lancamento)}`
       }),
-      botaoDeTotal(lancamento, TEXTOS.INCLUIR, false),
-      lancamento.foraDoTotalManual === null ? null : botaoDeTotal(lancamento, TEXTOS.AUTOMATICO, null)
+      ehContaPropria(lancamento) ? null : botaoDeTotal(lancamento, TEXTOS.INCLUIR, false),
+      ehContaPropria(lancamento) || lancamento.foraDoTotalManual === null
+        ? null
+        : botaoDeTotal(lancamento, TEXTOS.AUTOMATICO, null)
     ]);
   }
 
@@ -508,7 +510,8 @@ function detalhe(lancamento) {
 }
 
 function classeValor(lancamento) {
-  return lancamento.valor > 0 ? 'tabela__valor tabela__valor--entrada' : 'tabela__valor';
+  const papel = PAPEIS_COLUNA_PLANILHA.VALOR;
+  return lancamento.valor > 0 ? `${papel} ${papel}--entrada` : papel;
 }
 
 function indicador(campo, ordenacao) {

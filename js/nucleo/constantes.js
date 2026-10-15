@@ -172,12 +172,31 @@ export const TIPOS_COLUNA = Object.freeze({
   METODO: 'metodo'
 });
 
+export const PAPEIS_COLUNA_PLANILHA = Object.freeze({
+  SELECAO: 'tabela__selecao',
+  DATA: 'tabela__data',
+  DESCRICAO: 'tabela__descricao',
+  CATEGORIA: 'tabela__categoria',
+  TAGS: 'tabela__tags',
+  VALOR: 'tabela__valor'
+});
+
 export const COLUNAS_PLANILHA = Object.freeze([
-  { campo: 'data', rotulo: 'Data', tipo: TIPOS_COLUNA.DATA },
-  { campo: 'descricaoOriginal', rotulo: 'Lançamento', tipo: TIPOS_COLUNA.TEXTO },
-  { campo: 'categoria', rotulo: 'Categoria', tipo: TIPOS_COLUNA.TEXTO },
-  { campo: 'tags', rotulo: 'Tags', tipo: TIPOS_COLUNA.TEXTO },
-  { campo: 'valor', rotulo: 'Valor', tipo: TIPOS_COLUNA.MOEDA }
+  { campo: 'data', rotulo: 'Data', tipo: TIPOS_COLUNA.DATA, papel: PAPEIS_COLUNA_PLANILHA.DATA },
+  {
+    campo: 'descricaoOriginal',
+    rotulo: 'Lançamento',
+    tipo: TIPOS_COLUNA.TEXTO,
+    papel: PAPEIS_COLUNA_PLANILHA.DESCRICAO
+  },
+  {
+    campo: 'categoria',
+    rotulo: 'Categoria',
+    tipo: TIPOS_COLUNA.TEXTO,
+    papel: PAPEIS_COLUNA_PLANILHA.CATEGORIA
+  },
+  { campo: 'tags', rotulo: 'Tags', tipo: TIPOS_COLUNA.TEXTO, papel: PAPEIS_COLUNA_PLANILHA.TAGS },
+  { campo: 'valor', rotulo: 'Valor', tipo: TIPOS_COLUNA.MOEDA, papel: PAPEIS_COLUNA_PLANILHA.VALOR }
 ]);
 
 export const COLUNAS_EXPORTACAO = Object.freeze({

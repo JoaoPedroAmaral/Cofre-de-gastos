@@ -14,8 +14,13 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+html,
 body {
-  min-height: 100vh;
+  overflow-x: clip;
+}
+
+body {
+  min-height: var(--altura-tela);
   font-family: var(--fonte-base);
   font-size: var(--texto-md);
   line-height: 1.5;
@@ -88,20 +93,52 @@ table {
   color: var(--cor-marca-texto);
 }
 
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--cor-barra-rolagem) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: var(--largura-barra-rolagem);
+  height: var(--largura-barra-rolagem);
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+::-webkit-scrollbar-thumb {
+  border: var(--respiro-barra-rolagem) solid transparent;
+  border-radius: var(--largura-barra-rolagem);
+  background-color: var(--cor-barra-rolagem);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--cor-barra-rolagem-ativa);
+}
+
 :root {
   --fonte-base: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fonte-display: 'Syne', 'Geist', system-ui, sans-serif;
   --fonte-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
   --texto-xs: 0.75rem;
-  --altura-rail-celular: 92px;
   --texto-sm: 0.8125rem;
   --texto-md: 0.9375rem;
   --texto-ml: 1.125rem;
   --texto-lg: 1.375rem;
-  --texto-xl: 1.75rem;
-  --texto-xxl: 2.75rem;
-  --texto-gigante: 5.25rem;
+  --texto-xl: clamp(1.5rem, 1.33rem + 0.85vw, 1.75rem);
+  --texto-xxl: clamp(1.75rem, 1.3rem + 2.25vw, 2.75rem);
+  --texto-gigante: clamp(2.25rem, 1.1rem + 6.5vw, 5.25rem);
+  --texto-trilha: clamp(0.625rem, 2.4vw, 0.75rem);
 
   --espaco-1: 0.25rem;
   --espaco-2: 0.5rem;
@@ -112,6 +149,9 @@ table {
   --espaco-7: 2.75rem;
   --espaco-8: 3.5rem;
 
+  --respiro-tela: clamp(1rem, 0.25rem + 3.6vw, 3.5rem);
+  --respiro-bloco: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+
   --raio-sm: 8px;
   --raio-md: 12px;
   --raio-lg: 18px;
@@ -120,6 +160,19 @@ table {
   --borda-foco: 2px;
   --largura-rail: 96px;
   --largura-maxima: 1640px;
+  --altura-tela: 100dvh;
+  --altura-item-trilha: 48px;
+  --largura-coluna-mes: 3rem;
+  --altura-trilha: calc(var(--altura-item-trilha) + var(--espaco-2) + env(safe-area-inset-bottom));
+  --largura-barra-rolagem: 10px;
+  --respiro-barra-rolagem: 2px;
+  --cor-barra-rolagem: var(--cor-borda-forte);
+  --cor-barra-rolagem-ativa: var(--cor-texto);
+
+  --alvo-toque: 44px;
+  --alvo-toque-denso: 40px;
+  --alvo-toque-miudo: 24px;
+  --altura-controle-compacto: 36px;
 
   --duracao-rapida: 120ms;
   --duracao-media: 220ms;
@@ -161,6 +214,12 @@ table {
 
 .pular-para-conteudo:focus {
   transform: translateY(0);
+}
+
+@supports not (height: 100dvh) {
+  :root {
+    --altura-tela: 100vh;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
